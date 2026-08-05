@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm install *)",
+      "PowerShell(npm run *)",
+      "Bash(npm view *)",
+      "Bash(xargs grep -l \"container\")"
+    ]
+  }
+}

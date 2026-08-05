@@ -1,0 +1,536 @@
+@import "tailwindcss";
+
+/* Class-based dark mode, driven by next-themes. Dark is the default. */
+@custom-variant light (&:where(.light, .light *));
+
+/* ===============================================================
+   DESIGN TOKENS — "Terminal" theme
+   Dark navy canvas, monospace chrome, coral accent.
+   Change values here and the whole site follows.
+=============================================================== */
+@theme {
+  /* Fonts — wired to next/font variables in app/layout.tsx */
+  --font-sans: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-ui), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Canvas — deep navy-slate, not pure black */
+  --color-shell-950: #0a0d14;
+  --color-shell-900: #0d111a;
+  --color-shell-850: #11161f;
+  --color-shell-800: #161c27;
+  --color-shell-750: #1b222f;
+  --color-shell-700: #232b3a;
+  --color-shell-600: #2e3849;
+  --color-shell-500: #4a5670;
+  --color-shell-400: #6b7794;
+  --color-shell-300: #8b97b0;
+  --color-shell-200: #b4bece;
+  --color-shell-100: #dbe1ea;
+  --color-shell-50: #f2f5f9;
+
+  /* Accent — deep terminal blue (the `$` prompt colour) */
+  --color-azure-300: #9dc0ff;
+  --color-azure-400: #6a9dff;
+  --color-azure-500: #3b7dff;
+  --color-azure-600: #1f5ce0;
+  --color-azure-700: #1746ab;
+
+  /* Terminal window-dot colours — monochrome blue trio, no red */
+  --color-dot-1: #2c3a52;
+  --color-dot-2: #3f6099;
+  --color-dot-3: #5b93e6;
+
+  /* Semantic status colours for category chips */
+  --color-sig-cyan: #56d4dd;
+  --color-sig-violet: #9b8ff5;
+  --color-sig-green: #5ddba0;
+  --color-sig-amber: #f0b453;
+  --color-sig-indigo: #7f9cf5;
+
+  /* Type scale additions */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  --container-content: 68ch;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------
+   SEMANTIC VARIABLES
+   Components use these only — never raw palette values.
+---------------------------------------------------------------- */
+:root,
+.dark {
+  --bg: var(--color-shell-900);
+  --bg-panel: var(--color-shell-850);
+  --bg-raised: var(--color-shell-800);
+  --bg-chrome: var(--color-shell-750);
+  --fg: var(--color-shell-50);
+  --fg-muted: var(--color-shell-300);
+  --fg-subtle: var(--color-shell-400);
+  --line: var(--color-shell-700);
+  --line-strong: var(--color-shell-600);
+  --accent: var(--color-azure-500);
+  --accent-hover: var(--color-azure-400);
+  --accent-fg: var(--color-shell-950);
+  --accent-dim: color-mix(in srgb, var(--color-azure-500) 16%, transparent);
+}
+
+/* Optional light mode — keeps the terminal feel on paper */
+.light {
+  --bg: #f7f8fa;
+  --bg-panel: #ffffff;
+  --bg-raised: #ffffff;
+  --bg-chrome: #eceff4;
+  --fg: var(--color-shell-950);
+  --fg-muted: var(--color-shell-500);
+  --fg-subtle: var(--color-shell-400);
+  --line: #dde2ea;
+  --line-strong: #c6cdd9;
+  --accent: var(--color-azure-700);
+  --accent-hover: var(--color-azure-600);
+  --accent-fg: #ffffff;
+  --accent-dim: color-mix(in srgb, var(--color-azure-700) 10%, transparent);
+}
+
+/* Expose semantics as Tailwind utilities: bg-canvas, text-fg, border-line ... */
+@theme inline {
+  --color-canvas: var(--bg);
+  --color-panel: var(--bg-panel);
+  --color-raised: var(--bg-raised);
+  --color-chrome: var(--bg-chrome);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-dim: var(--accent-dim);
+}
+
+/* ---------------------------------------------------------------
+   BASE
+---------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 999px;
+    border: 2px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-shell-500);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------
+   UTILITIES
+---------------------------------------------------------------- */
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 64rem;
+  padding-inline: 1.25rem;
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Small uppercase monospace label — used for section eyebrows */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* Bordered mono tag chip, e.g. DETECTION / BREACH / AI */
+@utility tag-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 0.125rem;
+}
+
+/* Panel: the bordered card used everywhere */
+@utility panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+}
+
+/* Headline hover underline */
+@utility link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.3s var(--ease-out-soft);
+  &:hover {
+    background-size: 100% 1px;
+  }
+}
+
+/* Blinking terminal cursor */
+@utility cursor-blink {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  vertical-align: text-bottom;
+  background-color: var(--accent);
+  animation: blink 1.1s steps(1, end) infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------
+   LIVE BACKGROUND
+   Fixed decorative layer behind all content. See components/live-background.tsx
+---------------------------------------------------------------- */
+.live-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 1. Radial accent glow, top-left, slowly breathing */
+.live-bg__glow {
+  position: absolute;
+  top: -18vh;
+  left: -12vw;
+  width: 70vw;
+  height: 70vw;
+  max-width: 900px;
+  max-height: 900px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 16%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 6%, transparent) 38%,
+    transparent 68%
+  );
+  filter: blur(28px);
+  animation: bg-breathe 14s ease-in-out infinite;
+}
+
+@keyframes bg-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+/* 2. Faint grid, drifting diagonally */
+.live-bg__grid {
+  position: absolute;
+  inset: -60px;
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.22;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 20%, transparent 78%);
+  animation: bg-drift 44s linear infinite;
+}
+
+@keyframes bg-drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(56px, 56px);
+  }
+}
+
+/* 3. Rotating globe + network arcs — anchored right, partly off-canvas */
+.live-bg__globe {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(22%, -50%);
+  opacity: 0.85;
+  mask-image: radial-gradient(circle at 50% 50%, #000 52%, transparent 76%);
+}
+
+.globe-network {
+  display: block;
+}
+
+/* Below lg the globe would fight the content — hide it */
+@media (width < 64rem) {
+  .live-bg__globe {
+    display: none;
+  }
+}
+
+/* 4. Drifting monospace code fragments */
+.live-bg__code {
+  position: absolute;
+  inset: 0;
+}
+
+.live-bg__fragment {
+  position: absolute;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  letter-spacing: 0.02em;
+  user-select: none;
+  animation-name: bg-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes bg-float {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(26px, -34px, 0);
+  }
+}
+
+/* 5. Scanline sweep */
+.live-bg__scan {
+  position: absolute;
+  inset-inline: 0;
+  height: 42vh;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--accent) 5%, transparent) 55%,
+    transparent
+  );
+  animation: bg-scan 11s linear infinite;
+}
+
+@keyframes bg-scan {
+  from {
+    top: -42vh;
+  }
+  to {
+    top: 100vh;
+  }
+}
+
+/* Content sits above the background layer */
+.live-bg ~ * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-bg__glow,
+  .live-bg__grid,
+  .live-bg__fragment,
+  .live-bg__scan {
+    animation: none !important;
+  }
+  .live-bg__scan {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------
+   ARTICLE BODY TYPOGRAPHY
+   Applied via <div className="article-body"> on article pages.
+---------------------------------------------------------------- */
+.article-body {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--fg-muted);
+}
+
+.article-body > * + * {
+  margin-top: 1.5em;
+}
+
+.article-body h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  color: var(--fg);
+  margin-top: 2.75rem;
+}
+
+.article-body h2::before {
+  content: "## ";
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.article-body h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-top: 2rem;
+}
+
+.article-body strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.article-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.article-body a:hover {
+  color: var(--accent-hover);
+}
+
+.article-body ul,
+.article-body ol {
+  padding-left: 1.5rem;
+}
+
+.article-body ul {
+  list-style: none;
+  padding-left: 1.25rem;
+}
+
+.article-body ul > li {
+  position: relative;
+}
+
+.article-body ul > li::before {
+  content: "–";
+  position: absolute;
+  left: -1.25rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.article-body ol {
+  list-style: decimal;
+}
+
+.article-body li + li {
+  margin-top: 0.5rem;
+}
+
+.article-body blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1.25rem;
+  color: var(--fg-subtle);
+}
+
+.article-body pre {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  padding: 1rem 1.125rem;
+  overflow-x: auto;
+  line-height: 1.7;
+  color: var(--color-shell-100);
+}
+
+.article-body :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  padding: 0.1em 0.35em;
+  color: var(--accent);
+}
+
+.article-body img {
+  border-radius: 0.375rem;
+  border: 1px solid var(--line);
+}
+
+.article-body figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+  margin-top: 0.625rem;
+}
+
+.article-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin-block: 2.5rem;
+}
