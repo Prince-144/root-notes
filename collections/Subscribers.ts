@@ -7,8 +7,11 @@ export const Subscribers: CollectionConfig = {
     defaultColumns: ["email", "confirmed", "subscribedAt"],
   },
   access: {
-    // No public read/update/delete — only the newsletter API routes (server-side, full access) touch this.
-    read: () => false,
+    // Public write access stays fully closed — only the newsletter API
+    // routes touch this, via the Local API, which bypasses these access
+    // functions entirely. Read is admin-only (was `() => false` for
+    // everyone, which also hid the subscriber list from the admin panel).
+    read: ({ req: { user } }) => Boolean(user),
     create: () => false,
     update: () => false,
     delete: () => false,

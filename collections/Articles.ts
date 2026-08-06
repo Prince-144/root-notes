@@ -7,6 +7,15 @@ export const Articles: CollectionConfig = {
     useAsTitle: "title",
     defaultColumns: ["title", "categorySlug", "publishedAt", "featured"],
   },
+  // Public reads (the site fetches articles unauthenticated at build/request
+  // time), but write access requires an authenticated admin — without this,
+  // Payload's default is fully open create/update/delete for every collection.
+  access: {
+    read: () => true,
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user),
+  },
   fields: [
     { name: "title", type: "text", required: true },
     {

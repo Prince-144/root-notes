@@ -9,6 +9,8 @@ function resendClient(): Resend | null {
   return apiKey ? new Resend(apiKey) : null;
 }
 
+const RESEND_COOLDOWN_MS = 60_000;
+
 export async function subscribe(email: string): Promise<{ ok: boolean; message: string }> {
   const payload = await getPayload({ config });
 
@@ -24,7 +26,19 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
     if (doc.confirmed) {
       return { ok: true, message: "You're already subscribed." };
     }
+    // Without this, repeatedly POSTing someone else's email address would
+    // email-bomb them with confirmation emails on every request.
+    const msSinceLastSend = Date.now() - Date.parse(doc.updatedAt);
+    if (msSinceLastSend < RESEND_COOLDOWN_MS) {
+      return { ok: true, message: "Check your inbox to confirm." };
+    }
     token = doc.confirmToken;
+    // Touch the doc so updatedAt resets the cooldown window for next time.
+    await payload.update({
+      collection: "subscribers",
+      id: doc.id,
+      data: { confirmToken: token },
+    });
   } else {
     token = crypto.randomBytes(24).toString("hex");
     await payload.create({
