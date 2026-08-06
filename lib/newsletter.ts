@@ -39,6 +39,7 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
   }
 
   const confirmUrl = `${siteConfig.url}/api/newsletter/confirm?token=${token}`;
+  const unsubscribeUrl = `${siteConfig.url}/api/newsletter/unsubscribe?token=${token}`;
   const resend = resendClient();
 
   if (resend) {
@@ -47,7 +48,7 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
       to: email,
       subject: `Confirm your ${siteConfig.name} subscription`,
-      html: `<p>One click to confirm your subscription to ${siteConfig.name}:</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>Didn't request this? Ignore this email.</p>`,
+      html: `<p>One click to confirm your subscription to ${siteConfig.name}:</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p style="color:#888;font-size:12px">Didn't request this? Ignore this email, or <a href="${unsubscribeUrl}">unsubscribe</a>.</p>`,
     });
   } else {
     console.warn(
@@ -74,6 +75,27 @@ export async function confirmSubscription(token: string): Promise<boolean> {
     collection: "subscribers",
     id: doc.id,
     data: { confirmed: true },
+  });
+
+  return true;
+}
+
+export async function unsubscribe(token: string): Promise<boolean> {
+  const payload = await getPayload({ config });
+
+  const result = await payload.find({
+    collection: "subscribers",
+    where: { confirmToken: { equals: token } },
+    limit: 1,
+  });
+
+  const doc = result.docs[0];
+  if (!doc) return false;
+
+  await payload.update({
+    collection: "subscribers",
+    id: doc.id,
+    data: { unsubscribedAt: new Date().toISOString() },
   });
 
   return true;

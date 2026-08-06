@@ -54,9 +54,9 @@ export default function PrivacyPage() {
 
       <h2>Unsubscribing</h2>
       <p>
-        Email <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a> and
-        we&apos;ll remove your address. (A self-serve unsubscribe link is planned but not live
-        yet.)
+        Every email we send includes an unsubscribe link — one click removes your address
+        immediately, no login required. You can also email{" "}
+        <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
       </p>
 
       <h2>Changes</h2>
