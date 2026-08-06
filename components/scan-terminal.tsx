@@ -96,10 +96,10 @@ export function ScanTerminal() {
 
   return (
     <aside
-      className="scan-terminal pointer-events-none fixed bottom-5 right-5 z-30 hidden w-[300px] lg:block"
+      className="scan-terminal pointer-events-none fixed left-5 top-[65%] z-0 hidden w-[300px] -translate-y-1/2 opacity-60 lg:block"
       aria-hidden="true"
     >
-      <div className="pointer-events-auto overflow-hidden rounded-md border border-line bg-panel/90 backdrop-blur-sm">
+      <div className="pointer-events-auto overflow-hidden rounded-md border border-line bg-panel/50 backdrop-blur-sm">
         <div className="flex items-center gap-2.5 border-b border-line bg-chrome px-3 py-2">
           <span className="size-2 rounded-full bg-[var(--color-dot-1)]" />
           <span className="size-2 rounded-full bg-[var(--color-dot-2)]" />
