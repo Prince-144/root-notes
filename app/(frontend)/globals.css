@@ -388,8 +388,11 @@
   }
 }
 
-/* Content sits above the background layer */
-.live-bg ~ * {
+/* Content sits above the background layer. Excludes .scan-terminal, which is
+   already `position: fixed` — this rule would otherwise win the cascade
+   (equal specificity, declared later) and downgrade it to `relative`,
+   breaking its viewport-fixed placement. */
+.live-bg ~ *:not(.scan-terminal) {
   position: relative;
   z-index: 1;
 }

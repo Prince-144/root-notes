@@ -96,7 +96,7 @@ export function ScanTerminal() {
 
   return (
     <aside
-      className="pointer-events-none fixed bottom-5 right-5 z-30 hidden w-[300px] lg:block"
+      className="scan-terminal pointer-events-none fixed bottom-5 right-5 z-30 hidden w-[300px] lg:block"
       aria-hidden="true"
     >
       <div className="pointer-events-auto overflow-hidden rounded-md border border-line bg-panel/90 backdrop-blur-sm">
