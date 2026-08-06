@@ -13,6 +13,8 @@ export const siteConfig = {
   url: "https://newsblog-six.vercel.app",
   locale: "en_US",
   author: "Prince Baruwala",
+  // Placeholder — swap for a real inbox before launch.
+  contactEmail: "hello@rootnotes.example",
   social: {
     twitter: "https://x.com/yourhandle",
     linkedin: "https://linkedin.com/company/yourhandle",
