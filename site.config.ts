@@ -14,9 +14,6 @@ export const siteConfig = {
   locale: "en_US",
   author: "Prince Baruwala",
   contactEmail: "hello@rootnotes.in",
-  social: {
-    rss: "/rss.xml",
-  },
   // GA4 measurement ID — not secret, it's embedded in every page's HTML anyway.
   googleAnalyticsId: "G-WNY1HWKZPT",
 } as const;

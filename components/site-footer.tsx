@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { Rss } from "lucide-react";
 import { footerNav, siteConfig } from "@/site.config";
-
-const socials = [{ name: "RSS", href: siteConfig.social.rss, Icon: Rss }];
 
 export function SiteFooter() {
   return (
@@ -19,20 +16,6 @@ export function SiteFooter() {
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg-subtle">
               {siteConfig.tagline}
             </p>
-            <div className="mt-5 flex gap-1">
-              {socials.map(({ name, href, Icon }) => (
-                <a
-                  key={name}
-                  href={href}
-                  aria-label={name}
-                  target={href.startsWith("http") ? "_blank" : undefined}
-                  rel={href.startsWith("http") ? "noreferrer noopener" : undefined}
-                  className="grid size-8 place-items-center rounded border border-line text-fg-subtle transition-colors hover:border-accent hover:text-accent"
-                >
-                  <Icon className="size-3.5" strokeWidth={1.75} />
-                </a>
-              ))}
-            </div>
           </div>
 
           {Object.entries(footerNav).map(([group, links]) => (
