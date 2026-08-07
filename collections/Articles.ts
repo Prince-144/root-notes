@@ -10,8 +10,12 @@ export const Articles: CollectionConfig = {
   // Public reads (the site fetches articles unauthenticated at build/request
   // time), but write access requires an authenticated admin — without this,
   // Payload's default is fully open create/update/delete for every collection.
+  // Public read is further scoped to status=published — otherwise draft
+  // content is reachable by anyone querying /api/articles directly, even
+  // though the site's own pages (lib/articles.ts) already filter it out.
+  // Logged-in admins still see everything, drafts included.
   access: {
-    read: () => true,
+    read: ({ req: { user } }) => (user ? true : { status: { equals: "published" } }),
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
