@@ -1,11 +1,39 @@
 import type { CollectionConfig } from "payload";
+import { revalidatePath } from "next/cache";
 import { categories } from "../site.config";
+
+/**
+ * Article pages are statically generated (generateStaticParams) with no
+ * time-based revalidation, so without this, publishing/editing/deleting in
+ * the admin panel updates Postgres but the live site keeps serving the old
+ * build until the next `vercel --prod` — the CMS write and the public site
+ * would silently disagree indefinitely.
+ */
+function revalidateArticlePaths(doc: { slug?: string; categorySlug?: string }) {
+  revalidatePath("/");
+  revalidatePath("/search");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/rss.xml");
+  if (doc.slug) revalidatePath(`/article/${doc.slug}`);
+  if (doc.categorySlug) revalidatePath(`/category/${doc.categorySlug}`);
+}
 
 export const Articles: CollectionConfig = {
   slug: "articles",
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "categorySlug", "publishedAt", "featured"],
+  },
+  hooks: {
+    afterChange: [
+      ({ doc, previousDoc }) => {
+        revalidateArticlePaths(doc);
+        if (previousDoc?.categorySlug && previousDoc.categorySlug !== doc.categorySlug) {
+          revalidatePath(`/category/${previousDoc.categorySlug}`);
+        }
+      },
+    ],
+    afterDelete: [({ doc }) => revalidateArticlePaths(doc)],
   },
   // Public reads (the site fetches articles unauthenticated at build/request
   // time), but write access requires an authenticated admin — without this,
