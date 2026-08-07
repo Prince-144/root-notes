@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { Github, Linkedin, Rss, Twitter } from "lucide-react";
+import { Rss } from "lucide-react";
 import { footerNav, siteConfig } from "@/site.config";
 
-const socials = [
-  { name: "X", href: siteConfig.social.twitter, Icon: Twitter },
-  { name: "LinkedIn", href: siteConfig.social.linkedin, Icon: Linkedin },
-  { name: "GitHub", href: siteConfig.social.github, Icon: Github },
-  { name: "RSS", href: siteConfig.social.rss, Icon: Rss },
-];
+const socials = [{ name: "RSS", href: siteConfig.social.rss, Icon: Rss }];
 
 export function SiteFooter() {
   return (

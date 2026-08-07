@@ -13,12 +13,8 @@ export const siteConfig = {
   url: "https://rootnotes.in",
   locale: "en_US",
   author: "Prince Baruwala",
-  // Placeholder — swap for a real inbox before launch.
-  contactEmail: "hello@rootnotes.example",
+  contactEmail: "hello@rootnotes.in",
   social: {
-    twitter: "https://x.com/yourhandle",
-    linkedin: "https://linkedin.com/company/yourhandle",
-    github: "https://github.com/yourhandle",
     rss: "/rss.xml",
   },
   // GA4 measurement ID — not secret, it's embedded in every page's HTML anyway.
