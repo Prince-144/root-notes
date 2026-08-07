@@ -11,10 +11,19 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   async headers() {
-    // No CSP here on purpose — the Payload admin panel needs a fairly loose
-    // script/style policy to work, and shipping a wrong one silently breaks
-    // /admin rather than failing loudly. These are the headers that are
-    // unambiguously safe to set unconditionally.
+    const publicSiteCsp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://www.google-analytics.com https://www.googletagmanager.com",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join("; ");
+
     return [
       {
         source: "/:path*",
@@ -25,6 +34,14 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
+      },
+      {
+        // Scoped to the public (frontend) site only — the Payload admin
+        // panel's actual script/style/connect requirements aren't
+        // independently verified against a CSP, so /admin and /api stay
+        // untouched rather than risk silently breaking them.
+        source: "/((?!admin|api).*)",
+        headers: [{ key: "Content-Security-Policy", value: publicSiteCsp }],
       },
     ];
   },
