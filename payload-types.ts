@@ -153,6 +153,11 @@ export interface Article {
   title: string;
   slug: string;
   excerpt: string;
+  status: 'draft' | 'published';
+  /**
+   * Full https:// URL. Must be on an allowed image host (see next.config.ts remotePatterns).
+   */
+  coverImageUrl?: string | null;
   /**
    * MDX source, rendered via next-mdx-remote on the article page.
    */
@@ -289,6 +294,8 @@ export interface ArticlesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   excerpt?: T;
+  status?: T;
+  coverImageUrl?: T;
   body?: T;
   categorySlug?: T;
   tags?: T;

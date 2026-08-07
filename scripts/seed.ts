@@ -40,6 +40,7 @@ The triager won because most tickets resolve in one or two tool calls. The code 
 3. Re-benchmark before you commit to a migration date. The public calculator undercounts tool-call overhead.
 
 Small builders running simple, single-purpose agents come out ahead here. Anyone running open-ended, multi-step agents should model this carefully before the next billing cycle.`,
+    status: "published",
     categorySlug: "ai",
     tags: ["openai", "pricing", "agents"],
     author: "Prince Baruwala",
@@ -88,6 +89,7 @@ Three things delayed detection:
 ## What changed since
 
 Registry operators now require hardware-key 2FA for publish access on packages above a download threshold, and several CI providers ship opt-in postinstall sandboxing. Neither is mandatory yet. Until it is, treat every transitive \`postinstall\` as untrusted code running with your credentials — because that's exactly what it is.`,
+    status: "published",
     categorySlug: "security",
     tags: ["supply-chain", "npm", "malware"],
     author: "Prince Baruwala",
@@ -129,6 +131,7 @@ Two categories are still moving fast: infra tooling with usage-based pricing alr
 It's worth naming what's getting filtered out: pre-revenue consumer social, horizontal AI wrappers without a data moat, and anything pitched primarily on TAM slides. None of that is new advice — it's just being enforced harder than it was in 2024.
 
 If you're raising in the next two quarters, budget for the 34-day number, not the 19-day one, and bring the retention curve to the first call.`,
+    status: "published",
     categorySlug: "startups",
     tags: ["funding", "vc", "data"],
     author: "Prince Baruwala",
@@ -169,6 +172,7 @@ The fastest ARM machine beat every x86 machine in the roundup on compile time **
 Emulated or Rosetta-style compatibility layers for legacy toolchains, and anything depending on AVX-512 code paths that haven't been ported. If your build pipeline is pure Rust or Go, none of that applies to you anymore.
 
 The gap didn't close gradually — it closed within a single chip generation. If your last "ARM isn't ready yet" benchmark is more than 18 months old, it's wrong now.`,
+    status: "published",
     categorySlug: "gadgets",
     tags: ["arm", "benchmarks", "laptops"],
     author: "Prince Baruwala",
@@ -210,6 +214,7 @@ Non-compliance with this tier caps at **€35M or 7% of global annual turnover**
 - If you run any emotion-recognition or biometric-categorization feature touching EU users, turn it off now rather than arguing about carve-outs later.
 
 The rest of the act phases in gradually. These four rules did not.`,
+    status: "published",
     categorySlug: "world",
     tags: ["regulation", "eu", "policy"],
     author: "Prince Baruwala",
@@ -250,6 +255,7 @@ Teams A and B had existing infra engineers with spare capacity and on-call rotat
 - The savings are real. So is the payroll you might be underpricing.
 
 Run the staffing math first. The Terraform comes after.`,
+    status: "published",
     categorySlug: "startups",
     tags: ["infra", "cost", "devops"],
     author: "Prince Baruwala",

@@ -28,6 +28,24 @@ export const Articles: CollectionConfig = {
     },
     { name: "excerpt", type: "textarea", required: true },
     {
+      name: "status",
+      type: "select",
+      required: true,
+      defaultValue: "draft",
+      options: [
+        { label: "Draft", value: "draft" },
+        { label: "Published", value: "published" },
+      ],
+      admin: { position: "sidebar" },
+    },
+    {
+      name: "coverImageUrl",
+      type: "text",
+      admin: {
+        description: "Full https:// URL. Must be on an allowed image host (see next.config.ts remotePatterns).",
+      },
+    },
+    {
       name: "body",
       type: "code",
       required: true,
