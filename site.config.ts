@@ -10,7 +10,7 @@ export const siteConfig = {
   tagline: "Breaches, patches and the infrastructure underneath — in five minutes.",
   description:
     "Daily security and infrastructure reporting: vulnerabilities, breaches, supply-chain attacks and the tooling that holds it together. Every post explains why it matters before it explains what happened.",
-  url: "https://newsblog-six.vercel.app",
+  url: "https://rootnotes.in",
   locale: "en_US",
   author: "Prince Baruwala",
   // Placeholder — swap for a real inbox before launch.
