@@ -8,14 +8,24 @@ import { categories } from "../site.config";
  * the admin panel updates Postgres but the live site keeps serving the old
  * build until the next `vercel --prod` — the CMS write and the public site
  * would silently disagree indefinitely.
+ *
+ * `revalidatePath` only works inside an active Next.js request (the admin
+ * panel's writes qualify, since Payload runs embedded via @payloadcms/next).
+ * One-off scripts that call the Local API directly (scripts/*.ts) have no
+ * such request context and would otherwise crash on this — silently no-op
+ * instead; a script-driven change just waits for the next deploy.
  */
 function revalidateArticlePaths(doc: { slug?: string; categorySlug?: string }) {
-  revalidatePath("/");
-  revalidatePath("/search");
-  revalidatePath("/sitemap.xml");
-  revalidatePath("/rss.xml");
-  if (doc.slug) revalidatePath(`/article/${doc.slug}`);
-  if (doc.categorySlug) revalidatePath(`/category/${doc.categorySlug}`);
+  try {
+    revalidatePath("/");
+    revalidatePath("/search");
+    revalidatePath("/sitemap.xml");
+    revalidatePath("/rss.xml");
+    if (doc.slug) revalidatePath(`/article/${doc.slug}`);
+    if (doc.categorySlug) revalidatePath(`/category/${doc.categorySlug}`);
+  } catch {
+    // No active Next.js request context (e.g. a standalone script) — skip.
+  }
 }
 
 export const Articles: CollectionConfig = {
@@ -29,7 +39,11 @@ export const Articles: CollectionConfig = {
       ({ doc, previousDoc }) => {
         revalidateArticlePaths(doc);
         if (previousDoc?.categorySlug && previousDoc.categorySlug !== doc.categorySlug) {
-          revalidatePath(`/category/${previousDoc.categorySlug}`);
+          try {
+            revalidatePath(`/category/${previousDoc.categorySlug}`);
+          } catch {
+            // No active Next.js request context (e.g. a standalone script) — skip.
+          }
         }
       },
     ],
