@@ -21,6 +21,8 @@ export const siteConfig = {
     github: "https://github.com/yourhandle",
     rss: "/rss.xml",
   },
+  // GA4 measurement ID — not secret, it's embedded in every page's HTML anyway.
+  googleAnalyticsId: "G-WNY1HWKZPT",
 } as const;
 
 export type Category = {

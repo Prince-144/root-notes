@@ -25,8 +25,11 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <p>
         If you subscribe to the newsletter, we store the email address you provide and a
-        confirmation timestamp. That&apos;s the only personal data this site collects. We
-        don&apos;t currently run analytics, ad tracking, or any other visitor-tracking script.
+        confirmation timestamp. Separately, Google Analytics collects aggregate,
+        non-identifying traffic data for every visitor (page views, referrers, approximate
+        location, device type) — see our{" "}
+        <a href="/cookies">Cookie Policy</a> for detail and how to opt out. We don&apos;t run
+        ad tracking or any other visitor-tracking script beyond that.
       </p>
 
       <h2>How we use it</h2>
@@ -49,6 +52,10 @@ export default function PrivacyPage() {
         <li>
           <strong>Vercel</strong> — hosts the site and processes standard server request logs
           (IP address, user agent) for operational purposes.
+        </li>
+        <li>
+          <strong>Google Analytics</strong> — collects aggregate traffic data for every
+          visitor, per Google&apos;s own privacy policy.
         </li>
       </ul>
 
