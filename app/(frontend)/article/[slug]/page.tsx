@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -34,6 +35,7 @@ export async function generateMetadata({
       publishedTime: article.publishedAt,
       authors: [article.author],
       url: `${siteConfig.url}/article/${article.slug}`,
+      ...(article.coverImageUrl ? { images: [article.coverImageUrl] } : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -117,6 +119,19 @@ export default async function ArticlePage({
           <MetaChip>{article.readingMinutes} MIN READ</MetaChip>
         </div>
       </TerminalWindow>
+
+      {article.coverImageUrl && (
+        <div className="relative mx-auto mt-10 aspect-video max-w-content overflow-hidden rounded-md border border-line">
+          <Image
+            src={article.coverImageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 768px) 720px, 100vw"
+            className="object-cover"
+            priority
+          />
+        </div>
+      )}
 
       <article className="article-body mx-auto mt-10 max-w-content">
         <MDXRemote source={article.body} />

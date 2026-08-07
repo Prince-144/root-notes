@@ -19,6 +19,7 @@ export type Article = {
   readingMinutes: number;
   featured?: boolean;
   views?: number;
+  coverImageUrl?: string;
 };
 
 export function formatDate(iso: string): string {

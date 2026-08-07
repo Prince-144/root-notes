@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { formatDate, type Article } from "@/lib/article-types";
 import { CategoryChip, MetaChip } from "./tag-chip";
@@ -5,6 +6,17 @@ import { CategoryChip, MetaChip } from "./tag-chip";
 export function ArticleCard({ article }: { article: Article }) {
   return (
     <article className="group relative flex h-full flex-col rounded-md border border-line bg-panel p-5 transition-colors hover:border-line-strong">
+      {article.coverImageUrl && (
+        <div className="relative -mx-5 -mt-5 mb-4 aspect-video overflow-hidden rounded-t-md border-b border-line">
+          <Image
+            src={article.coverImageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3">
         <CategoryChip slug={article.categorySlug} />
         <MetaChip>{article.readingMinutes} MIN</MetaChip>

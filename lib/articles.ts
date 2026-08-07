@@ -26,6 +26,7 @@ function normalize(doc: PayloadArticleDoc): Article {
     readingMinutes: doc.readingMinutes,
     featured: doc.featured ?? false,
     views: doc.views ?? 0,
+    coverImageUrl: doc.coverImageUrl ?? undefined,
   };
 }
 
@@ -40,6 +41,7 @@ const fetchAllArticles = cache(async (): Promise<Article[]> => {
   const payload = await getPayload({ config });
   const { docs } = await payload.find({
     collection: "articles",
+    where: { status: { equals: "published" } },
     sort: "-publishedAt",
     limit: 0,
     depth: 0,
