@@ -22,7 +22,7 @@ export const Articles: CollectionConfig = {
   slug: "articles",
   admin: {
     useAsTitle: "title",
-    defaultColumns: ["title", "categorySlug", "publishedAt", "featured"],
+    defaultColumns: ["title", "status", "categorySlug", "publishedAt", "featured"],
   },
   hooks: {
     afterChange: [
