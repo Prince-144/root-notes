@@ -142,7 +142,10 @@ export async function generateArticle(
     : "";
 
   const stream = client.messages.stream({
-    model: "claude-opus-5",
+    // Sonnet rather than Opus: news research and ~600-word summarisation is
+    // well within Sonnet's range, and web-search results make the input large
+    // enough that the per-article price difference is roughly 3x.
+    model: "claude-sonnet-5",
     max_tokens: 16000,
     system: SYSTEM_PROMPT,
     thinking: { type: "adaptive" },
