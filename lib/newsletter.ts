@@ -3,6 +3,7 @@ import { getPayload } from "payload";
 import { Resend } from "resend";
 import config from "@payload-config";
 import { siteConfig } from "@/site.config";
+import { getArticles } from "@/lib/articles";
 
 function resendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
@@ -113,4 +114,68 @@ export async function unsubscribe(token: string): Promise<boolean> {
   });
 
   return true;
+}
+
+/** Called by the daily cron (app/(frontend)/api/cron/daily-digest). */
+export async function sendDailyDigest(): Promise<{
+  sent: number;
+  articleCount: number;
+  note: string;
+}> {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const newArticles = (await getArticles()).filter((a) => a.publishedAt >= since);
+
+  if (newArticles.length === 0) {
+    return { sent: 0, articleCount: 0, note: "no articles published in the last 24h" };
+  }
+
+  const payload = await getPayload({ config });
+  const { docs: subscribers } = await payload.find({
+    collection: "subscribers",
+    where: {
+      confirmed: { equals: true },
+      unsubscribedAt: { exists: false },
+    },
+    limit: 0,
+  });
+
+  if (subscribers.length === 0) {
+    return { sent: 0, articleCount: newArticles.length, note: "no confirmed subscribers" };
+  }
+
+  const resend = resendClient();
+  if (!resend) {
+    console.warn(
+      `[newsletter] RESEND_API_KEY not set — would have sent a ${newArticles.length}-story digest to ${subscribers.length} subscriber(s).`,
+    );
+    return { sent: 0, articleCount: newArticles.length, note: "RESEND_API_KEY not set" };
+  }
+
+  const itemsHtml = newArticles
+    .map(
+      (a) =>
+        `<li style="margin-bottom:18px"><a href="${siteConfig.url}/article/${a.slug}" style="font-weight:600;color:#111;text-decoration:none">${a.title}</a><br/><span style="color:#666;font-size:14px;line-height:1.5">${a.excerpt}</span></li>`,
+    )
+    .join("");
+
+  let sent = 0;
+  for (const sub of subscribers) {
+    const unsubscribeUrl = `${siteConfig.url}/api/newsletter/unsubscribe?token=${sub.confirmToken}`;
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
+      to: sub.email,
+      subject: `${siteConfig.name} — ${newArticles.length} new ${newArticles.length === 1 ? "story" : "stories"} today`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <h2 style="margin-bottom:2px">${siteConfig.name}</h2>
+        <p style="color:#888;font-size:13px;margin-top:0">${siteConfig.tagline}</p>
+        <ul style="list-style:none;padding:0;margin-top:24px">${itemsHtml}</ul>
+        <p style="color:#aaa;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
+          <a href="${unsubscribeUrl}" style="color:#aaa">Unsubscribe</a>
+        </p>
+      </div>`,
+    });
+    sent += 1;
+  }
+
+  return { sent, articleCount: newArticles.length, note: "" };
 }
