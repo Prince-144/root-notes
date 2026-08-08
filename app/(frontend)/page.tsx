@@ -93,12 +93,37 @@ export default async function HomePage() {
         </section>
 
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <h2 className="label-mono">Trending now</h2>
-          <ul className="mt-3">
-            {trending.map((article, i) => (
-              <TrendingRow key={article.slug} article={article} index={i} />
-            ))}
-          </ul>
+          {/* Trending is empty until there's enough traffic to rank honestly
+              (see getTrending) — show the beats instead of a fake leaderboard. */}
+          {trending.length > 0 ? (
+            <>
+              <h2 className="label-mono">Trending now</h2>
+              <ul className="mt-3">
+                {trending.map((article, i) => (
+                  <TrendingRow key={article.slug} article={article} index={i} />
+                ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <h2 className="label-mono">Browse by beat</h2>
+              <ul className="mt-3 space-y-3">
+                {categories.map((category) => (
+                  <li key={category.slug}>
+                    <Link
+                      href={`/category/${category.slug}`}
+                      className="link-underline font-mono text-sm text-fg"
+                    >
+                      {category.name}
+                    </Link>
+                    <p className="mt-1 text-xs leading-relaxed text-fg-subtle">
+                      {category.description}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           <div className="mt-10">
             <NewsletterBox />

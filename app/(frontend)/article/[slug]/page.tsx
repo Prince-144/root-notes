@@ -7,6 +7,7 @@ import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { RelatedPosts } from "@/components/related-posts";
 import { CategoryChip, MetaChip } from "@/components/tag-chip";
 import { BackButton } from "@/components/back-button";
+import { ViewTracker } from "@/components/view-tracker";
 import { formatDate, getArticles, getBySlug, getRelated } from "@/lib/articles";
 import { getCategory, siteConfig } from "@/site.config";
 
@@ -98,6 +99,7 @@ export default async function ArticlePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      <ViewTracker slug={article.slug} />
       <div className="mb-4">
         <BackButton />
       </div>
