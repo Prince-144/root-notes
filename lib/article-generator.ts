@@ -40,6 +40,11 @@ const COVER_IMAGES: Record<string, string[]> = {
 const ARTICLE_SCHEMA = {
   type: "object",
   properties: {
+    found_story: {
+      type: "boolean",
+      description:
+        "True only if a real, current story was verified via web search this session. False if searches failed, were rate-limited, or surfaced nothing recent — in which case leave every other field empty.",
+    },
     title: {
       type: "string",
       description:
@@ -75,6 +80,7 @@ const ARTICLE_SCHEMA = {
     },
   },
   required: [
+    "found_story",
     "title",
     "slug",
     "excerpt",
@@ -101,11 +107,13 @@ Accuracy is the hard constraint:
 - Only write about events you found and verified via web search in this session.
 - Never invent an incident, CVE, company, breach, number, or date. If your search didn't surface a specific figure, don't state one.
 - Prefer stories with at least two independent sources. Attribute contested claims.
-- If you cannot find a story that meets this bar, say so in the excerpt and keep the body short rather than padding it.
+
+If you cannot verify a story — searches fail, are rate-limited, or surface nothing recent enough — set found_story to false and leave the other fields empty. Do NOT write about the fact that you couldn't find a story: that is not an article, and it will be discarded. Returning found_story false is a correct, expected outcome, not a failure.
 
 Beats, in priority order: trending cyber attacks, new data breaches, AI innovation and new models, hacking tools and security products.`;
 
 export type GeneratedArticle = {
+  found_story: boolean;
   title: string;
   slug: string;
   excerpt: string;
@@ -121,6 +129,51 @@ function pickCoverImage(categorySlug: string, seed: number): string {
   return pool[seed % pool.length];
 }
 
+/**
+ * True when web search produced nothing usable — every attempt errored.
+ *
+ * Search errors arrive as HTTP 200 with an error object in place of the results
+ * array, so they never raise and have to be checked for explicitly. Crucially,
+ * a *partial* failure is normal and must not abort the run: the model reliably
+ * attempts one search past `max_uses` and gets `max_uses_exceeded` back, which
+ * is our own budget working as intended, not a fault. An earlier version failed
+ * the run on any error and threw away good articles because of that last call.
+ */
+function searchFullyFailed(message: Anthropic.Message): string | null {
+  let succeeded = 0;
+  let firstError: string | null = null;
+
+  for (const block of message.content) {
+    if (block.type !== "web_search_tool_result") continue;
+
+    if (Array.isArray(block.content)) {
+      if (block.content.length > 0) succeeded += 1;
+    } else if (!firstError) {
+      firstError = block.content.error_code ?? "unknown";
+    }
+  }
+
+  return succeeded === 0 ? (firstError ?? "no results") : null;
+}
+
+/** Pulls the URLs the web_search tool actually returned, deduped, newest first. */
+function searchedUrls(message: Anthropic.Message): string[] {
+  const urls = new Set<string>();
+
+  for (const block of message.content) {
+    if (block.type !== "web_search_tool_result") continue;
+    // `content` is a result array on success and a single error object on
+    // failure (e.g. max_uses_exceeded) — guard before iterating.
+    if (!Array.isArray(block.content)) continue;
+
+    for (const result of block.content) {
+      if (result.url) urls.add(result.url);
+    }
+  }
+
+  return [...urls].slice(0, 8);
+}
+
 type CategorySlug = Article["categorySlug"];
 
 /** Narrows a model-supplied category string to the collection's enum, or null. */
@@ -129,8 +182,37 @@ function existingCategory(slug: string): CategorySlug | null {
   return match ? (match.slug as CategorySlug) : null;
 }
 
-/** Researches and drafts one article. Returns null if nothing publishable was found. */
+/**
+ * Researches and drafts one article. Returns null if nothing publishable was
+ * found — which is a normal outcome, not an error.
+ *
+ * Retries on transport failures because a run holds a streaming connection open
+ * for minutes and ECONNRESET mid-stream was observed twice in testing. The
+ * SDK's own retries don't cover a drop after the stream has started, and this
+ * runs unattended on a schedule, so an un-retried drop is a silently missed
+ * article.
+ */
 export async function generateArticle(
+  existingTitles: string[],
+): Promise<GeneratedArticle | null> {
+  const MAX_ATTEMPTS = 3;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      return await attemptGeneration(existingTitles);
+    } catch (err) {
+      const isLast = attempt === MAX_ATTEMPTS;
+      const reason = err instanceof Error ? err.message : String(err);
+      console.warn(`[generator] attempt ${attempt}/${MAX_ATTEMPTS} failed: ${reason}`);
+      if (isLast) throw err;
+      await new Promise((r) => setTimeout(r, attempt * 5000));
+    }
+  }
+
+  return null;
+}
+
+async function attemptGeneration(
   existingTitles: string[],
 ): Promise<GeneratedArticle | null> {
   const client = new Anthropic();
@@ -180,24 +262,43 @@ Verify the details across sources, then write the article.${avoid}`,
     return null;
   }
 
+  // When search returns nothing at all, the model has no material — and left to
+  // itself it will write *about* that. One observed run produced "Search Limit
+  // Reached Before a New Story Could Be Verified" as a full article. Bail
+  // before parsing rather than let that reach the drafts queue.
+  const searchError = searchFullyFailed(message);
+  if (searchError) {
+    console.warn(`[generator] web search returned nothing (${searchError}) — skipping this run`);
+    return null;
+  }
+
   try {
     const parsed = JSON.parse(text.text) as GeneratedArticle;
 
-    // A schema-valid response is not necessarily a usable one. One observed run
-    // returned `title: "placeholder"` with a one-word body — structured outputs
-    // guarantee the shape, not that the model actually found a story. Reject
-    // rather than draft a stub that wastes review time.
+    // A schema-valid response is not necessarily a usable one. Two observed
+    // failure modes: `title: "placeholder"` with a one-word body, and a
+    // meta-article about being unable to search. found_story is the model's
+    // own signal; the word count catches stubs it still marks as found.
+    if (!parsed.found_story) {
+      console.log("[generator] model reported no verifiable story this run");
+      return null;
+    }
+
     const wordCount = parsed.body.trim().split(/\s+/).length;
     if (wordCount < 200) {
       console.warn(`[generator] body too short (${wordCount} words) — discarding`);
       return null;
     }
-    if (!parsed.sources.length) {
-      console.warn("[generator] no sources cited — discarding");
+    // Take sources from the search results the API actually returned rather
+    // than the model's self-reported list — the model reliably leaves that
+    // field empty, and the tool results are ground truth for what it read.
+    const searched = searchedUrls(message);
+    if (!searched.length) {
+      console.warn("[generator] no web searches performed — discarding");
       return null;
     }
 
-    return parsed;
+    return { ...parsed, sources: searched };
   } catch (err) {
     console.error("[generator] could not parse model output as JSON:", err);
     return null;
