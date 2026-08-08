@@ -17,9 +17,8 @@ export function ArticleCard({ article }: { article: Article }) {
           />
         </div>
       )}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
         <CategoryChip slug={article.categorySlug} />
-        <MetaChip>{article.readingMinutes} MIN</MetaChip>
       </div>
 
       <h3 className="mt-4 text-base font-semibold leading-snug tracking-tight text-fg">
@@ -31,8 +30,66 @@ export function ArticleCard({ article }: { article: Article }) {
 
       <p className="mt-2.5 text-sm leading-relaxed text-fg-subtle">{article.excerpt}</p>
 
-      <div className="mt-auto pt-5">
-        <MetaChip>{formatDate(article.publishedAt)}</MetaChip>
+      {/* Rule under the meta row: without it the date and the category chip
+          render as the same small mono text and the card reads as one flat
+          block. The rule gives the meta somewhere to sit. */}
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4">
+        <p className="font-mono text-2xs tracking-widest text-fg-subtle">
+          {formatDate(article.publishedAt)}
+        </p>
+        {/* Dimmed rather than hover-only: hover never fires on touch, so a
+            reveal-on-hover affordance is invisible to half the readers. */}
+        <span
+          aria-hidden
+          className="shrink-0 font-mono text-2xs tracking-widest text-accent opacity-50 transition-opacity group-hover:opacity-100"
+        >
+          READ →
+        </span>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * Wide list row: thumbnail left, headline and standfirst right.
+ *
+ * Trades the grid's density for scannability — at a glance you get the
+ * headline at full width instead of wrapped across four lines in a narrow
+ * column, which is what a news feed is actually read for.
+ */
+export function ArticleRow({ article }: { article: Article }) {
+  return (
+    <article className="group relative flex gap-4 border-b border-line py-6 first:pt-0 last:border-0 sm:gap-6">
+      {article.coverImageUrl && (
+        <div className="relative aspect-video w-28 shrink-0 self-start overflow-hidden rounded-md border border-line sm:w-56">
+          <Image
+            src={article.coverImageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 640px) 224px, 112px"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <h3 className="text-base font-semibold leading-snug tracking-tight text-fg sm:text-lg">
+          <Link href={`/article/${article.slug}`} className="link-underline">
+            <span className="absolute inset-0" aria-hidden />
+            {article.title}
+          </Link>
+        </h3>
+
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <MetaChip>{formatDate(article.publishedAt)}</MetaChip>
+          <CategoryChip slug={article.categorySlug} />
+        </div>
+
+        {/* Clamped rather than full: uneven excerpt lengths turn a stacked
+            list into a ragged wall, and the row is a teaser, not the piece. */}
+        <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-fg-subtle">
+          {article.excerpt}
+        </p>
       </div>
     </article>
   );
@@ -54,7 +111,6 @@ export function TrendingRow({ article, index }: { article: Article; index: numbe
         </h3>
         <div className="mt-1.5 flex items-center gap-3">
           <MetaChip>{article.categorySlug.toUpperCase()}</MetaChip>
-          <MetaChip>{article.readingMinutes} MIN</MetaChip>
         </div>
       </div>
     </li>

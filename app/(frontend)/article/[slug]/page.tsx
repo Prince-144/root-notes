@@ -118,7 +118,6 @@ export default async function ArticlePage({
           <CategoryChip slug={article.categorySlug} />
           <MetaChip>{article.author}</MetaChip>
           <MetaChip>{formatDate(article.publishedAt)}</MetaChip>
-          <MetaChip>{article.readingMinutes} MIN READ</MetaChip>
         </div>
       </TerminalWindow>
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
-import { ArticleCard, TrendingRow } from "@/components/article-card";
+import { ArticleRow, TrendingRow } from "@/components/article-card";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { formatDate, getArticles, getFeatured, getTrending } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
@@ -85,9 +85,9 @@ export default async function HomePage() {
           <h2 className="text-lg font-semibold tracking-tight text-fg">
             Latest analysis
           </h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+          <div className="mt-6">
             {latest.map((article) => (
-              <ArticleCard key={article.slug} article={article} />
+              <ArticleRow key={article.slug} article={article} />
             ))}
           </div>
         </section>
