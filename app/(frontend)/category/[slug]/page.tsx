@@ -85,7 +85,7 @@ export default async function CategoryPage({
       {articles.length > 0 ? (
         <div className="mt-12">
           {articles.map((article) => (
-            <ArticleRow key={article.slug} article={article} />
+            <ArticleRow key={article.slug} article={article} showCategory={false} />
           ))}
         </div>
       ) : (

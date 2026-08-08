@@ -9,8 +9,17 @@ import { CategoryChip, MetaChip } from "./tag-chip";
  * Trades the grid's density for scannability — at a glance you get the
  * headline at full width instead of wrapped across four lines in a narrow
  * column, which is what a news feed is actually read for.
+ *
+ * `showCategory` exists for the category pages, where every row carries the
+ * same chip as the page heading and it reads as noise.
  */
-export function ArticleRow({ article }: { article: Article }) {
+export function ArticleRow({
+  article,
+  showCategory = true,
+}: {
+  article: Article;
+  showCategory?: boolean;
+}) {
   return (
     <article className="group relative flex gap-4 border-b border-line py-6 first:pt-0 last:border-0 sm:gap-6">
       {article.coverImageUrl && (
@@ -35,7 +44,7 @@ export function ArticleRow({ article }: { article: Article }) {
 
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <MetaChip>{formatDate(article.publishedAt)}</MetaChip>
-          <CategoryChip slug={article.categorySlug} />
+          {showCategory && <CategoryChip slug={article.categorySlug} />}
         </div>
 
         {/* Clamped rather than full: uneven excerpt lengths turn a stacked
