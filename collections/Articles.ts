@@ -63,6 +63,16 @@ export const Articles: CollectionConfig = {
     delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
+    {
+      name: "publishAction",
+      type: "ui",
+      admin: {
+        position: "sidebar",
+        components: {
+          Field: "@/components/admin/publish-button#PublishButton",
+        },
+      },
+    },
     { name: "title", type: "text", required: true },
     {
       name: "slug",
