@@ -1,0 +1,29 @@
+# Vercel Cron on the Hobby plan only fires once per day, which can't hit the
+# 6-7 articles/day target — so article generation is scheduled here instead.
+# The newsletter digest stays on Vercel Cron (vercel.json); it only needs to
+# run once a day.
+name: Generate article drafts
+
+on:
+  # Every 3 hours = 8 runs/day. Each run drafts one article, so this lands
+  # above the 6-7/day target with room for runs that find no story.
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger draft generation
+        run: |
+          response=$(curl -sS -w "\n%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://rootnotes.in/api/cron/generate-articles")
+          body=$(echo "$response" | sed '$d')
+          status=$(echo "$response" | tail -n1)
+          echo "$body"
+          if [ "$status" != "200" ]; then
+            echo "::error::generation endpoint returned $status"
+            exit 1
+          fi
