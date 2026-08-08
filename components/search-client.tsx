@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
-import { ArticleCard } from "@/components/article-card";
+import { ArticleRow } from "@/components/article-card";
 import { matchesQuery } from "@/lib/search-match";
 import type { Article } from "@/lib/article-types";
 
@@ -50,9 +50,9 @@ export function SearchClient({
       </TerminalWindow>
 
       {trimmed && results.length > 0 && (
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12">
           {results.map((article) => (
-            <ArticleCard key={article.slug} article={article} />
+            <ArticleRow key={article.slug} article={article} />
           ))}
         </div>
       )}

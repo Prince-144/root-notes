@@ -3,53 +3,6 @@ import Link from "next/link";
 import { formatDate, type Article } from "@/lib/article-types";
 import { CategoryChip, MetaChip } from "./tag-chip";
 
-export function ArticleCard({ article }: { article: Article }) {
-  return (
-    <article className="group relative flex h-full flex-col rounded-md border border-line bg-panel p-5 transition-colors hover:border-line-strong">
-      {article.coverImageUrl && (
-        <div className="relative -mx-5 -mt-5 mb-4 aspect-video overflow-hidden rounded-t-md border-b border-line">
-          <Image
-            src={article.coverImageUrl}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover"
-          />
-        </div>
-      )}
-      <div className="flex items-center gap-3">
-        <CategoryChip slug={article.categorySlug} />
-      </div>
-
-      <h3 className="mt-4 text-base font-semibold leading-snug tracking-tight text-fg">
-        <Link href={`/article/${article.slug}`} className="link-underline">
-          <span className="absolute inset-0" aria-hidden />
-          {article.title}
-        </Link>
-      </h3>
-
-      <p className="mt-2.5 text-sm leading-relaxed text-fg-subtle">{article.excerpt}</p>
-
-      {/* Rule under the meta row: without it the date and the category chip
-          render as the same small mono text and the card reads as one flat
-          block. The rule gives the meta somewhere to sit. */}
-      <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4">
-        <p className="font-mono text-2xs tracking-widest text-fg-subtle">
-          {formatDate(article.publishedAt)}
-        </p>
-        {/* Dimmed rather than hover-only: hover never fires on touch, so a
-            reveal-on-hover affordance is invisible to half the readers. */}
-        <span
-          aria-hidden
-          className="shrink-0 font-mono text-2xs tracking-widest text-accent opacity-50 transition-opacity group-hover:opacity-100"
-        >
-          READ →
-        </span>
-      </div>
-    </article>
-  );
-}
-
 /**
  * Wide list row: thumbnail left, headline and standfirst right.
  *

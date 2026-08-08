@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
-import { ArticleCard } from "@/components/article-card";
+import { ArticleRow } from "@/components/article-card";
 import { BackButton } from "@/components/back-button";
 import { getByCategory } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
@@ -83,9 +83,9 @@ export default async function CategoryPage({
       </TerminalWindow>
 
       {articles.length > 0 ? (
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12">
           {articles.map((article) => (
-            <ArticleCard key={article.slug} article={article} />
+            <ArticleRow key={article.slug} article={article} />
           ))}
         </div>
       ) : (
