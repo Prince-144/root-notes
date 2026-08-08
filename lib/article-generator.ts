@@ -153,7 +153,10 @@ export async function generateArticle(
       effort: "medium",
       format: { type: "json_schema", schema: ARTICLE_SCHEMA },
     },
-    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
+    // Search results dominate the bill — a measured 8-search run pulled 209K
+    // input tokens (~$0.45 of a ~$0.59 article). 4 is enough to corroborate a
+    // story across sources; raising it raises cost roughly proportionally.
+    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
     messages: [
       {
         role: "user",
@@ -178,7 +181,23 @@ Verify the details across sources, then write the article.${avoid}`,
   }
 
   try {
-    return JSON.parse(text.text) as GeneratedArticle;
+    const parsed = JSON.parse(text.text) as GeneratedArticle;
+
+    // A schema-valid response is not necessarily a usable one. One observed run
+    // returned `title: "placeholder"` with a one-word body — structured outputs
+    // guarantee the shape, not that the model actually found a story. Reject
+    // rather than draft a stub that wastes review time.
+    const wordCount = parsed.body.trim().split(/\s+/).length;
+    if (wordCount < 200) {
+      console.warn(`[generator] body too short (${wordCount} words) — discarding`);
+      return null;
+    }
+    if (!parsed.sources.length) {
+      console.warn("[generator] no sources cited — discarding");
+      return null;
+    }
+
+    return parsed;
   } catch (err) {
     console.error("[generator] could not parse model output as JSON:", err);
     return null;

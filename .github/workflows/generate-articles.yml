@@ -1,29 +1,42 @@
-# Vercel Cron on the Hobby plan only fires once per day, which can't hit the
-# 6-7 articles/day target — so article generation is scheduled here instead.
-# The newsletter digest stays on Vercel Cron (vercel.json); it only needs to
-# run once a day.
+# Generation runs here, not on Vercel: a research run takes minutes (measured
+# at 138s and 364s), and Vercel's Hobby plan caps a function at 60s. GitHub
+# Actions allows up to 6 hours, so the script runs directly and writes to Neon.
+# The newsletter digest stays on Vercel Cron — it finishes in seconds.
 name: Generate article drafts
 
 on:
-  # Every 3 hours = 8 runs/day. Each run drafts one article, so this lands
-  # above the 6-7/day target with room for runs that find no story.
+  # Every 4 hours = 6 runs/day, matching the 6-7/day target. Each run costs
+  # roughly $0.30-0.60 in API usage, so changing this cadence changes the bill
+  # proportionally — see lib/article-generator.ts.
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */4 * * *"
   workflow_dispatch: {}
+
+concurrency:
+  # Two runs researching at once would likely land on the same story.
+  group: generate-articles
+  cancel-in-progress: false
 
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Trigger draft generation
-        run: |
-          response=$(curl -sS -w "\n%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "https://rootnotes.in/api/cron/generate-articles")
-          body=$(echo "$response" | sed '$d')
-          status=$(echo "$response" | tail -n1)
-          echo "$body"
-          if [ "$status" != "200" ]; then
-            echo "::error::generation endpoint returned $status"
-            exit 1
-          fi
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Research and draft one article
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: npx tsx scripts/generate-article.ts
