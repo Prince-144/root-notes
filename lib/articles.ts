@@ -13,6 +13,24 @@ import type { Article } from "./article-types";
 export type { Article } from "./article-types";
 export { formatDate } from "./article-types";
 
+/**
+ * An uploaded cover beats the URL field — someone picking a file in the admin
+ * is overriding the stock image the generator chose. Prefers the 1600x900
+ * derivative so a card isn't handed the full-size original to scale down.
+ *
+ * Only populated when the query runs at depth >= 1; at depth 0 the relation is
+ * just an id and this correctly falls through to the URL.
+ */
+function resolveCover(doc: PayloadArticleDoc): string | undefined {
+  const upload = doc.coverImage;
+  if (upload && typeof upload === "object") {
+    const sized = upload.sizes?.cover?.url;
+    if (sized) return sized;
+    if (upload.url) return upload.url;
+  }
+  return doc.coverImageUrl ?? undefined;
+}
+
 function normalize(doc: PayloadArticleDoc): Article {
   return {
     slug: doc.slug,
@@ -26,7 +44,7 @@ function normalize(doc: PayloadArticleDoc): Article {
     readingMinutes: doc.readingMinutes,
     featured: doc.featured ?? false,
     views: doc.views ?? 0,
-    coverImageUrl: doc.coverImageUrl ?? undefined,
+    coverImageUrl: resolveCover(doc),
   };
 }
 
@@ -44,7 +62,9 @@ const fetchAllArticles = cache(async (): Promise<Article[]> => {
     where: { status: { equals: "published" } },
     sort: "-publishedAt",
     limit: 0,
-    depth: 0,
+    // depth 1 populates the coverImage upload so its URL is available;
+    // Articles has no other relations, so this costs one join.
+    depth: 1,
   });
   return docs.map(normalize);
 });

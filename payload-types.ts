@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     articles: Article;
+    media: Media;
     subscribers: Subscriber;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -79,6 +80,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -155,7 +157,11 @@ export interface Article {
   excerpt: string;
   status: 'draft' | 'published';
   /**
-   * Full https:// URL. Must be on an allowed image host (see next.config.ts remotePatterns).
+   * Upload a cover image. Takes precedence over the URL below.
+   */
+  coverImage?: (number | null) | Media;
+  /**
+   * Fallback if no image is uploaded. Full https:// URL on an allowed host (see next.config.ts remotePatterns).
    */
   coverImageUrl?: string | null;
   /**
@@ -171,6 +177,38 @@ export interface Article {
   views?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Describe the image for screen readers and when it fails to load.
+   */
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    cover?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -217,6 +255,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'articles';
         value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'subscribers';
@@ -295,6 +337,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   slug?: T;
   excerpt?: T;
   status?: T;
+  coverImage?: T;
   coverImageUrl?: T;
   body?: T;
   categorySlug?: T;
@@ -306,6 +349,38 @@ export interface ArticlesSelect<T extends boolean = true> {
   views?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        cover?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

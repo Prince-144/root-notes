@@ -13,3 +13,7 @@ tsconfig.tsbuildinfo
 
 .vercel
 .env*
+
+# Local dev uploads. Production stores these in Vercel Blob, so anything
+# that lands here is a local artefact, not content.
+/media

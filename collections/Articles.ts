@@ -94,11 +94,23 @@ export const Articles: CollectionConfig = {
       ],
       admin: { position: "sidebar" },
     },
+    /**
+     * Two ways in, because they serve different authors. The generator writes
+     * a stock URL it picks itself; a human editing in the admin usually has a
+     * file. The upload wins when both are set — it's the deliberate choice.
+     */
+    {
+      name: "coverImage",
+      type: "upload",
+      relationTo: "media",
+      admin: { description: "Upload a cover image. Takes precedence over the URL below." },
+    },
     {
       name: "coverImageUrl",
       type: "text",
       admin: {
-        description: "Full https:// URL. Must be on an allowed image host (see next.config.ts remotePatterns).",
+        description:
+          "Fallback if no image is uploaded. Full https:// URL on an allowed host (see next.config.ts remotePatterns).",
       },
     },
     {
