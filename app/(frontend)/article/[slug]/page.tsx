@@ -9,7 +9,7 @@ import { RelatedPosts } from "@/components/related-posts";
 import { CategoryChip, MetaChip } from "@/components/tag-chip";
 import { BackButton } from "@/components/back-button";
 import { ViewTracker } from "@/components/view-tracker";
-import { formatDate, getArticles, getBySlug, getRelated } from "@/lib/articles";
+import { formatDate, getArticles, getBySlug, getRelated, tagToSlug } from "@/lib/articles";
 import { getCategory, siteConfig } from "@/site.config";
 
 export async function generateStaticParams() {
@@ -147,9 +147,13 @@ export default async function ArticlePage({
 
       <div className="mx-auto mt-10 flex max-w-content flex-wrap gap-2">
         {article.tags.map((tag) => (
-          <span key={tag} className="tag-chip text-fg-subtle">
+          <Link
+            key={tag}
+            href={`/tag/${tagToSlug(tag)}`}
+            className="tag-chip text-fg-subtle transition-colors hover:border-accent hover:text-fg"
+          >
             {tag}
-          </span>
+          </Link>
         ))}
       </div>
 

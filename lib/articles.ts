@@ -85,6 +85,39 @@ export async function getByCategory(slug: string): Promise<Article[]> {
   return articles.filter((a) => a.categorySlug === slug);
 }
 
+/**
+ * Tags are free text the writer (or the generator) typed, not a controlled
+ * vocabulary — so they're matched case-insensitively and compared in their
+ * URL form. "AI Infrastructure" and "ai-infrastructure" are the same tag.
+ */
+export function tagToSlug(tag: string): string {
+  return tag.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+export async function getByTag(slug: string): Promise<Article[]> {
+  const wanted = tagToSlug(slug);
+  const articles = await getArticles();
+  return articles.filter((a) => a.tags.some((t) => tagToSlug(t) === wanted));
+}
+
+/** Every tag in use, with how many published articles carry it. */
+export async function getAllTags(): Promise<{ slug: string; label: string; count: number }[]> {
+  const articles = await getArticles();
+  const seen = new Map<string, { slug: string; label: string; count: number }>();
+
+  for (const article of articles) {
+    for (const tag of article.tags) {
+      const slug = tagToSlug(tag);
+      if (!slug) continue;
+      const existing = seen.get(slug);
+      if (existing) existing.count += 1;
+      else seen.set(slug, { slug, label: tag, count: 1 });
+    }
+  }
+
+  return [...seen.values()].sort((a, b) => b.count - a.count || a.slug.localeCompare(b.slug));
+}
+
 export async function getBySlug(slug: string): Promise<Article | undefined> {
   const articles = await getArticles();
   return articles.find((a) => a.slug === slug);
