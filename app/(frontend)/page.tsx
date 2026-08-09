@@ -134,7 +134,7 @@ export default async function HomePage() {
 
       {/* Last thing before the footer: the ask comes after the reader has
           seen what they'd be signing up for, not beside it. */}
-      <div className="mt-10 max-w-xl">
+      <div className="mt-10">
         <NewsletterBox />
       </div>
     </div>
