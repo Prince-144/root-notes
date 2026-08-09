@@ -8,7 +8,10 @@ import { categories, siteConfig } from "@/site.config";
 export default async function HomePage() {
   const featured = await getFeatured();
   const allArticles = await getArticles();
-  const latest = allArticles.filter((a) => a.slug !== featured?.slug);
+  // The featured piece stays in this list. The hero above is a one-line
+  // ticker, not a card — dropping the newest story out of "Latest analysis"
+  // to avoid repeating a headline left the feed starting at the second-newest.
+  const latest = allArticles;
   const trending = await getTrending(5);
 
   // Counted from the list already in hand rather than a query per category.
