@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import type { Metadata } from "next";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { RelatedPosts } from "@/components/related-posts";
@@ -135,7 +136,13 @@ export default async function ArticlePage({
       )}
 
       <article className="article-body mx-auto mt-10 max-w-content">
-        <MDXRemote source={article.body} />
+        {/* remark-gfm, or a markdown table in the body renders as a paragraph
+            of pipe characters. Article bodies routinely contain tables, so
+            without this the comparison in a piece silently turns to noise. */}
+        <MDXRemote
+          source={article.body}
+          options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+        />
       </article>
 
       <div className="mx-auto mt-10 flex max-w-content flex-wrap gap-2">

@@ -537,3 +537,37 @@
   border-top: 1px solid var(--line);
   margin-block: 2.5rem;
 }
+
+/* Tables arrive via remark-gfm. The table scrolls inside its own box rather
+   than widening the page — a wide comparison table on a phone would
+   otherwise push the whole article sideways. */
+.article-body table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.article-body th,
+.article-body td {
+  border: 1px solid var(--line);
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.article-body th {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  background: var(--bg-raised);
+  font-weight: 500;
+}
+
+.article-body td {
+  color: var(--fg-muted);
+}
