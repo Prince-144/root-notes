@@ -11,6 +11,14 @@ export default async function HomePage() {
   const latest = allArticles.filter((a) => a.slug !== featured?.slug);
   const trending = await getTrending(5);
 
+  // Counted from the list already in hand rather than a query per category.
+  // Published only, since that's what getArticles returns — the number a
+  // reader sees matches what they'll find when they click through.
+  const countByCategory = allArticles.reduce<Record<string, number>>((acc, a) => {
+    acc[a.categorySlug] = (acc[a.categorySlug] ?? 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="container-page py-10 sm:py-14">
       {/* ---------- HERO: live terminal feed ---------- */}
@@ -57,30 +65,17 @@ export default async function HomePage() {
         changed, and tells you why it matters before it tells you what happened.
       </p>
 
-      {/* ---------- STATUS STRIP ---------- */}
-      <section className="mt-10 rounded-md border border-line bg-panel px-5 py-5 sm:px-7">
-        <h2 className="label-mono">Coverage</h2>
-        <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
-          {categories.map((c) => (
-            <li key={c.slug}>
-              <Link href={`/category/${c.slug}`} className="group block">
-                <span
-                  className="font-mono text-sm font-medium transition-opacity group-hover:opacity-70"
-                  style={{ color: c.color }}
-                >
-                  {c.name}
-                </span>
-                <span className="mt-1 block font-mono text-2xs uppercase tracking-widest text-fg-subtle">
-                  {c.description.split(",")[0].split(" ").slice(0, 3).join(" ")}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ---------- MAIN GRID ---------- */}
-      <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_280px]">
+      {/* ---------- MAIN GRID ----------
+          The sidebar column only exists when there's trending data to put in
+          it (see getTrending). Keeping the two-column track unconditionally
+          would leave a 280px hole beside the feed until then. */}
+      <div
+        className={
+          trending.length > 0
+            ? "mt-16 grid gap-12 lg:grid-cols-[1fr_280px]"
+            : "mt-16"
+        }
+      >
         <section>
           <h2 className="text-lg font-semibold tracking-tight text-fg">
             Latest analysis
@@ -92,43 +87,55 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-20 lg:self-start">
-          {/* Trending is empty until there's enough traffic to rank honestly
-              (see getTrending) — show the beats instead of a fake leaderboard. */}
-          {trending.length > 0 ? (
-            <>
-              <h2 className="label-mono">Trending now</h2>
-              <ul className="mt-3">
-                {trending.map((article, i) => (
-                  <TrendingRow key={article.slug} article={article} index={i} />
-                ))}
-              </ul>
-            </>
-          ) : (
-            <>
-              <h2 className="label-mono">Browse by beat</h2>
-              <ul className="mt-3 space-y-3">
-                {categories.map((category) => (
-                  <li key={category.slug}>
-                    <Link
-                      href={`/category/${category.slug}`}
-                      className="link-underline font-mono text-sm text-fg"
-                    >
-                      {category.name}
-                    </Link>
-                    <p className="mt-1 text-xs leading-relaxed text-fg-subtle">
-                      {category.description}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+        {trending.length > 0 && (
+          <aside className="lg:sticky lg:top-20 lg:self-start">
+            <h2 className="label-mono">Trending now</h2>
+            <ul className="mt-3">
+              {trending.map((article, i) => (
+                <TrendingRow key={article.slug} article={article} index={i} />
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
 
-          <div className="mt-10">
-            <NewsletterBox />
-          </div>
-        </aside>
+      {/* ---------- COVERAGE ----------
+          Below the feed, not above it: this is where you look once you've
+          finished scanning the headlines, and above the fold it was pushing
+          the articles themselves down the page. */}
+      <section className="mt-16 rounded-md border border-line bg-panel px-5 py-5 sm:px-7">
+        <h2 className="label-mono">Coverage</h2>
+        <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+          {categories.map((c) => {
+            const count = countByCategory[c.slug] ?? 0;
+            return (
+              <li key={c.slug}>
+                <Link href={`/category/${c.slug}`} className="group block">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span
+                      className="font-mono text-sm font-medium transition-opacity group-hover:opacity-70"
+                      style={{ color: c.color }}
+                    >
+                      {c.name}
+                    </span>
+                    <span className="font-mono text-xs tabular-nums text-fg-muted">
+                      {count}
+                    </span>
+                  </span>
+                  <span className="mt-1 block font-mono text-2xs uppercase tracking-widest text-fg-subtle">
+                    {c.description.split(",")[0].split(" ").slice(0, 3).join(" ")}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      {/* Last thing before the footer: the ask comes after the reader has
+          seen what they'd be signing up for, not beside it. */}
+      <div className="mt-10 max-w-xl">
+        <NewsletterBox />
       </div>
     </div>
   );
