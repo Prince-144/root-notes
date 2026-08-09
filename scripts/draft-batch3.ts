@@ -5,12 +5,14 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
+import type { Article } from "../payload-types";
 
 type Draft = {
   slug: string;
   title: string;
   excerpt: string;
-  categorySlug: string;
+  // Union from the generated types, so an invalid slug fails here not at runtime.
+  categorySlug: Article["categorySlug"];
   tags: string[];
   readingMinutes: number;
   coverImageUrl: string;
