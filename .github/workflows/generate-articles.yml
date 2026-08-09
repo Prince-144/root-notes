@@ -5,11 +5,14 @@
 name: Generate article drafts
 
 on:
-  # Every 4 hours = 6 runs/day, matching the 6-7/day target. Each run costs
-  # roughly $0.30-0.60 in API usage, so changing this cadence changes the bill
-  # proportionally — see lib/article-generator.ts.
-  schedule:
-    - cron: "0 */4 * * *"
+  # Manual only — publishing is a hand process for now. A cron here would pile
+  # up runs nobody asked for, and each run costs roughly $0.30-0.60 in API
+  # usage (see lib/article-generator.ts).
+  #
+  # To draft one article, run this workflow from the Actions tab. To put it
+  # back on a schedule, restore:
+  #   schedule:
+  #     - cron: "0 */4 * * *"   # every 4 hours = 6/day
   workflow_dispatch: {}
 
 concurrency:
