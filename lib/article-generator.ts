@@ -15,26 +15,51 @@ import { categories, siteConfig } from "@/site.config";
  * model — a hallucinated image URL renders as a broken image on the live site,
  * and the model has no way to check that a URL resolves.
  */
+const COVER_PARAMS = "?w=1600&h=900&fit=crop&crop=entropy&q=80";
+
+/**
+ * Every id here has been fetched and looked at. Two articles sharing a cover
+ * reads as a mistake in a feed, so the pool has to be larger than the number
+ * of articles a category will ever hold — when a pool runs out, pickCoverImage
+ * warns rather than silently repeating.
+ */
 const COVER_IMAGES: Record<string, string[]> = {
   security: [
-    "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=1600&q=80",
-    "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1600&q=80",
-    "https://images.unsplash.com/photo-1544890225-2f3faec4cd60?w=1600&q=80",
-    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80",
-    "https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?w=1600&q=80",
+    "photo-1614064641938-3bbee52942c7",
+    "photo-1563986768609-322da13575f3",
+    "photo-1544890225-2f3faec4cd60",
+    "photo-1526374965328-7f61d4dc18c5",
+    "photo-1523437113738-bbd3cc89fb19",
+    "photo-1691435828932-911a7801adfb",
+    "photo-1629837093109-11325d6e7afd",
+    "photo-1614508569207-3295ac89d75f",
+    "photo-1580584126903-c17d41830450",
   ],
   ai: [
-    "https://images.unsplash.com/photo-1633265486064-086b219458ec?w=1600&q=80",
-    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1782918843144-920ff238efc5?w=1600&q=80",
-    "https://images.unsplash.com/photo-1591696205602-2f950c417cb9?w=1600&q=80",
+    "photo-1633265486064-086b219458ec",
+    "photo-1550751827-4bd374c3f58b",
+    "photo-1782918843144-920ff238efc5",
+    "photo-1591696205602-2f950c417cb9",
+    "photo-1763128516808-785e80c1dd68",
+    "photo-1667670778881-537035257bd8",
+    "photo-1617839625591-e5a789593135",
   ],
   startups: [
-    "https://images.unsplash.com/photo-1560264280-88b68371db39?w=1600&q=80",
-    "https://images.unsplash.com/photo-1680992046626-418f7e910589?w=1600&q=80",
+    "photo-1560264280-88b68371db39",
+    "photo-1680992046626-418f7e910589",
+    "photo-1680992044138-ce4864c2b962",
   ],
-  gadgets: ["https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80"],
-  world: ["https://images.unsplash.com/photo-1539796326180-5d8272550830?w=1600&q=80"],
+  gadgets: [
+    "photo-1518770660439-4636190af475",
+    "photo-1550041473-d296a3a8a18a",
+    "photo-1746005514011-ea00280f3b6e",
+    "photo-1592659762303-90081d34b277",
+  ],
+  world: [
+    "photo-1539796326180-5d8272550830",
+    "photo-1636652966850-5ac4d02370e9",
+    "photo-1709967884183-7ffa9d168508",
+  ],
 };
 
 const ARTICLE_SCHEMA = {
@@ -124,9 +149,39 @@ export type GeneratedArticle = {
   sources: string[];
 };
 
-function pickCoverImage(categorySlug: string, seed: number): string {
+/**
+ * Picks a cover no other article is already using.
+ *
+ * The previous version indexed the pool by article count, which guaranteed a
+ * repeat as soon as there were more articles in a category than images in its
+ * pool — and with one image in the gadgets pool, that was immediately.
+ *
+ * `used` holds the ids already taken. If a pool is exhausted this falls back
+ * to reusing one, but says so, because the fix is more images rather than a
+ * cleverer rotation.
+ */
+function pickCoverImage(categorySlug: string, used: Set<string>): string {
   const pool = COVER_IMAGES[categorySlug] ?? COVER_IMAGES.security;
-  return pool[seed % pool.length];
+  const free = pool.find((id) => !used.has(id));
+
+  if (!free) {
+    console.warn(
+      `[generator] every ${categorySlug} cover is in use (${pool.length} in pool) — reusing one`,
+    );
+    return `https://images.unsplash.com/${pool[0]}${COVER_PARAMS}`;
+  }
+
+  return `https://images.unsplash.com/${free}${COVER_PARAMS}`;
+}
+
+/** The photo ids already on articles, read out of whatever cover URLs exist. */
+function coversInUse(docs: { coverImageUrl?: string | null }[]): Set<string> {
+  const used = new Set<string>();
+  for (const doc of docs) {
+    const match = doc.coverImageUrl?.match(/photo-[\w-]+/);
+    if (match) used.add(match[0]);
+  }
+  return used;
 }
 
 /**
@@ -309,11 +364,16 @@ Verify the details across sources, then write the article.${avoid}`,
 export async function generateAndSaveDraft(): Promise<string | null> {
   const payload = await getPayload({ config });
 
+  // Every article, not a recent window: a cover used two months ago is still
+  // a repeat. Only the three fields this needs, so the row count doesn't cost
+  // anything — titles for topic dedupe, slugs for collisions, covers for
+  // picking an unused image.
   const { docs: existing } = await payload.find({
     collection: "articles",
-    limit: 40,
+    limit: 0,
     sort: "-publishedAt",
     depth: 0,
+    select: { title: true, slug: true, coverImageUrl: true },
   });
 
   const article = await generateArticle(existing.map((d) => d.title));
@@ -350,7 +410,7 @@ export async function generateAndSaveDraft(): Promise<string | null> {
       status: "draft",
       featured: false,
       views: 0,
-      coverImageUrl: pickCoverImage(article.categorySlug, existing.length),
+      coverImageUrl: pickCoverImage(article.categorySlug, coversInUse(existing)),
     },
   });
 
