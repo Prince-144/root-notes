@@ -17,3 +17,6 @@ tsconfig.tsbuildinfo
 # Local dev uploads. Production stores these in Vercel Blob, so anything
 # that lands here is a local artefact, not content.
 /media
+
+# Generated Instagram assets — regenerate from the article, do not commit.
+/instagram
