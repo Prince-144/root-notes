@@ -1,7 +1,7 @@
 import { ArticleRow } from "@/components/article-card";
-import type { Article } from "@/lib/article-types";
+import type { ArticleSummary } from "@/lib/article-types";
 
-export function RelatedPosts({ articles }: { articles: Article[] }) {
+export function RelatedPosts({ articles }: { articles: ArticleSummary[] }) {
   if (articles.length === 0) return null;
 
   return (

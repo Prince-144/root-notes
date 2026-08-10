@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatDate, type Article } from "@/lib/article-types";
+import { formatDate, type ArticleSummary } from "@/lib/article-types";
 import { CategoryChip, MetaChip } from "./tag-chip";
 
 /**
@@ -17,7 +17,7 @@ export function ArticleRow({
   article,
   showCategory = true,
 }: {
-  article: Article;
+  article: ArticleSummary;
   showCategory?: boolean;
 }) {
   return (
@@ -58,7 +58,7 @@ export function ArticleRow({
 }
 
 /** Compact numbered row used in the Trending list. */
-export function TrendingRow({ article, index }: { article: Article; index: number }) {
+export function TrendingRow({ article, index }: { article: ArticleSummary; index: number }) {
   return (
     <li className="group relative flex gap-4 border-b border-line py-4 last:border-0">
       <span className="font-mono text-sm text-accent/70 tabular-nums">

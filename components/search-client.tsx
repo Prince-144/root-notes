@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { ArticleRow } from "@/components/article-card";
 import { matchesQuery } from "@/lib/search-match";
-import type { Article } from "@/lib/article-types";
+import type { ArticleSummary } from "@/lib/article-types";
 
 export function SearchClient({
   articles,
   initialQuery,
 }: {
-  articles: Article[];
+  articles: ArticleSummary[];
   initialQuery: string;
 }) {
   const [query, setQuery] = useState(initialQuery);

@@ -1,7 +1,7 @@
-import type { Article } from "./article-types";
+import type { ArticleSummary } from "./article-types";
 
 /** Pure matcher shared by the server-side search action and the live client-side filter. */
-export function matchesQuery(article: Article, query: string): boolean {
+export function matchesQuery(article: ArticleSummary, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return false;
 
