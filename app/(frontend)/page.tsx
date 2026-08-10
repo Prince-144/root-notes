@@ -22,8 +22,51 @@ export default async function HomePage() {
     return acc;
   }, {});
 
+  /**
+   * The article pages carry NewsArticle markup, but the homepage carried none,
+   * so nothing told Google what the site itself is. WebSite + Organization is
+   * how a publication gets treated as a publication rather than as a loose
+   * collection of pages.
+   */
+  const siteLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${siteConfig.url}/#website`,
+        url: siteConfig.url,
+        name: siteConfig.name,
+        description: siteConfig.tagline,
+        publisher: { "@id": `${siteConfig.url}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": `${siteConfig.url}/#organization`,
+        name: siteConfig.name,
+        url: siteConfig.url,
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteConfig.url}/icon.png`,
+        },
+      },
+    ],
+  };
+
   return (
     <div className="container-page py-10 sm:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteLd) }}
+      />
+
       {/* ---------- HERO: live terminal feed ---------- */}
       <TerminalWindow title={`${siteConfig.name.toLowerCase()} — live feed`}>
         <Prompt>whoami</Prompt>

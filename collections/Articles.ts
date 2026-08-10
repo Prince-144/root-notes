@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { revalidatePath } from "next/cache";
 import { categories } from "../site.config";
+import { submitToIndexNow } from "../lib/indexnow";
 
 /**
  * Article pages are statically generated (generateStaticParams) with no
@@ -44,6 +45,17 @@ export const Articles: CollectionConfig = {
           } catch {
             // No active Next.js request context (e.g. a standalone script) — skip.
           }
+        }
+
+        // Only on the draft -> published transition. Re-pinging on every later
+        // edit would be noise to the search engines and pointless to us.
+        if (doc.status === "published" && previousDoc?.status !== "published") {
+          void submitToIndexNow([
+            `/article/${doc.slug}`,
+            `/category/${doc.categorySlug}`,
+            "/",
+            "/sitemap.xml",
+          ]);
         }
       },
     ],
