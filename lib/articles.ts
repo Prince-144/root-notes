@@ -64,6 +64,10 @@ function normalize(doc: ListDoc): ArticleSummary {
     featured: doc.featured ?? false,
     views: doc.views ?? 0,
     coverImageUrl: resolveCover(doc),
+    coverImageAlt:
+      doc.coverImage && typeof doc.coverImage === "object"
+        ? (doc.coverImage.alt ?? undefined)
+        : undefined,
   };
 }
 
@@ -173,7 +177,9 @@ export const getBySlug = cache(async (slug: string): Promise<Article | undefined
   });
 
   const doc = docs[0];
-  return doc ? { ...normalize(doc), body: doc.body } : undefined;
+  return doc
+    ? { ...normalize(doc), body: doc.body, updatedAt: doc.updatedAt ?? undefined }
+    : undefined;
 });
 
 /** Same-category articles first, newest first, backfilled from the rest if the category runs short. */

@@ -25,12 +25,21 @@ export type ArticleSummary = {
   featured?: boolean;
   views?: number;
   coverImageUrl?: string;
+  /**
+   * Description of the cover image. Only present for uploaded covers, where
+   * the Media collection requires one — stock URLs have nothing to describe
+   * them, so callers should fall back rather than render an empty alt on a
+   * meaningful image.
+   */
+  coverImageAlt?: string;
 };
 
 /** A summary plus the MDX source — only fetched for the article page itself. */
 export type Article = ArticleSummary & {
   /** MDX source for the article body — rendered into .article-body via next-mdx-remote. */
   body: string;
+  /** Payload's own timestamp, used for dateModified in the article's structured data. */
+  updatedAt?: string;
 };
 
 export function formatDate(iso: string): string {

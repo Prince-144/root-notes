@@ -62,18 +62,33 @@ export default async function ArticlePage({
   const articleUrl = `${siteConfig.url}/article/${article.slug}`;
   const categoryUrl = `${siteConfig.url}/category/${category.slug}`;
 
+  /**
+   * `image` and `publisher.logo` are required for Google's article rich
+   * results — without them the page renders fine and simply never qualifies,
+   * which is a silent failure rather than an error anyone would notice.
+   *
+   * Relative image paths are made absolute: structured data is consumed
+   * outside the page's own context, so it can't resolve "/covers/x.jpg".
+   */
+  const absolute = (url: string) => (url.startsWith("http") ? url : `${siteConfig.url}${url}`);
+
   const newsArticleLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: article.title,
     description: article.excerpt,
+    ...(article.coverImageUrl ? { image: [absolute(article.coverImageUrl)] } : {}),
     datePublished: article.publishedAt,
-    dateModified: article.publishedAt,
+    dateModified: article.updatedAt ?? article.publishedAt,
     author: { "@type": "Person", name: article.author },
     publisher: {
       "@type": "Organization",
       name: siteConfig.name,
       url: siteConfig.url,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteConfig.url}/icon.png`,
+      },
     },
     mainEntityOfPage: articleUrl,
     articleSection: category.name,
@@ -124,9 +139,13 @@ export default async function ArticlePage({
 
       {article.coverImageUrl && (
         <div className="relative mx-auto mt-10 aspect-video max-w-content overflow-hidden rounded-md border border-line">
+          {/* The lead image carries meaning here, unlike the card thumbnails
+              where the headline sits directly alongside. Uses the uploader's
+              description when there is one, and falls back to the headline
+              rather than leaving a screen reader with nothing. */}
           <Image
             src={article.coverImageUrl}
-            alt=""
+            alt={article.coverImageAlt ?? article.title}
             fill
             sizes="(min-width: 768px) 720px, 100vw"
             className="object-cover"
