@@ -261,11 +261,32 @@ function sections(body: string): { heading: string; text: string; isQuote: boole
       .filter(Boolean);
 
     const quote = paragraphs.find((p) => p.startsWith(">"));
+
     // Tables, lists and code don't reduce to a slide; a lead-in ending in a
     // colon is only half a thought without whatever followed it.
-    const prose = paragraphs.find(
-      (p) => !/^[|\-*>`#]/.test(p) && !p.endsWith(":") && clean(p).length > 40,
+    //
+    // The bullet test requires a space after the marker. Matching a bare "*"
+    // threw away every paragraph opening with bold — "**Atlassian** cut 1,600
+    // people while stating..." — which is exactly where the substance tends to
+    // be, so sections fell back to their framing sentence.
+    const eligible = paragraphs.filter(
+      (p) => !/^([|>`#]|[-*+] )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
     );
+
+    // Not the first eligible paragraph — the best one. A section often opens
+    // with a short framing line ("The tell is in the contradictions") and puts
+    // the substance in the paragraph after it, so taking the first produced
+    // slides that announced a point without making it. Figures are the
+    // strongest signal that a paragraph carries the actual content.
+    const score = (p: string) => {
+      const t = clean(p);
+      const digits = (t.match(/\d/g) ?? []).length;
+      const lengthScore = Math.min(t.length, 420) / 100;
+      // Very long paragraphs get truncated on the slide, so cap the reward.
+      return (digits > 0 ? 3 : 0) + lengthScore;
+    };
+
+    const prose = eligible.slice().sort((a, b) => score(b) - score(a))[0];
 
     const chosen = quote ?? prose;
     if (!chosen) continue;
