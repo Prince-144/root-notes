@@ -30,6 +30,15 @@ const MUTED = "#8b97b0";
 const DIM = "#4a5670";
 const ACCENT = "#3b7dff";
 
+/**
+ * Body copy on a slide sits over a photograph, not the site's flat panel, so
+ * it can't use the muted grey the site uses. Against the lighter swirls in
+ * some backgrounds that grey loses contrast and the paragraph stops being
+ * comfortable — this is bright enough to hold across the whole pool while
+ * still sitting below the heading.
+ */
+const BODY_ON_IMAGE = "#d5dde8";
+
 const MONO = "Consolas, 'DejaVu Sans Mono', monospace";
 const SANS = "'Segoe UI', Arial, sans-serif";
 
@@ -249,7 +258,7 @@ ${SCRIM}
   )}</text>
 ${quoteBar}
 <text font-family="${SANS}" font-size="${bodySize}" ${
-    isQuote ? `font-style="italic" fill="${FG}"` : `fill="${MUTED}"`
+    isQuote ? `font-style="italic" fill="${FG}"` : `fill="${BODY_ON_IMAGE}"`
   }>${tspans(bodyLines, bodyX, bodyTop, bodyLead)}</text>
 ${FOOTER}
 </svg>`;
