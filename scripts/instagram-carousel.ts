@@ -84,58 +84,144 @@ function tspans(lines: string[], x: number, y: number, lineHeight: number): stri
 }
 
 /**
- * Backgrounds for the content slides. Every id has been fetched and looked at.
+ * Backgrounds are generated rather than fetched.
  *
- * Deliberately dark, abstract and textural rather than illustrative: a slide
- * carries three or four lines of body copy, and a photograph with subjects in
- * it competes with the text no matter how heavy the scrim. These read as
- * surface, which is what a background should do.
+ * A stock pool always runs out — eleven images against eight slides a post
+ * meant the second carousel necessarily repeated the first. Drawing them
+ * gives an unlimited supply, keeps every one inside the site's palette
+ * instead of whatever a photographer happened to shoot, and removes a
+ * network call per slide.
+ *
+ * Seeded from the slug and slide index, so regenerating a carousel produces
+ * exactly the same artwork.
  */
-const BACKGROUNDS = [
-  "photo-1578662996442-48f60103fc96",
-  "photo-1596865249308-2472dc5807d7",
-  "photo-1585314062340-f1a5a7c9328d",
-  "photo-1690983320828-c01b88baacb0",
-  "photo-1710438399422-2fca27686bcd",
-  "photo-1567095751004-aa51a2690368",
-  "photo-1693648793394-0b76b7eb042e",
-  "photo-1608501821300-4f99e58bba77",
-  "photo-1566410824233-a8011929225c",
-  "photo-1638376776402-9a4b75fe21bb",
-  "photo-1709377058964-929af7f2d02f",
-];
+
+/** mulberry32 — small, seedable, and good enough for placing shapes. */
+function rng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedFrom(slug: string, index: number): number {
+  let h = 2166136261;
+  for (const ch of `${slug}:${index}`) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Deep blues and slates only — anything warmer stops looking like the site. */
+const TINTS = ["#1b3a6b", "#16305c", "#1f4a7a", "#233a5e", "#2c3a52", "#14283f"];
 
 /**
- * A distinct background per slide, and a different run of them per article —
- * two carousels posted the same week shouldn't open with the same texture.
- * Deterministic so regenerating a carousel produces the same set.
+ * Three layers: a base wash, soft glows, and one structural motif. The motif
+ * varies by seed so consecutive slides don't share a silhouette, and every
+ * opacity is low — this sits under body copy and has to stay a background.
  */
-function pickBackgrounds(slug: string, count: number): string[] {
-  let hash = 0;
-  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) % 100000;
-  const start = hash % BACKGROUNDS.length;
-  return Array.from(
-    { length: count },
-    (_, i) => BACKGROUNDS[(start + i) % BACKGROUNDS.length],
-  );
+function backgroundSvg(slug: string, index: number): string {
+  const r = rng(seedFrom(slug, index));
+  const pick = <T,>(xs: T[]): T => xs[Math.floor(r() * xs.length)];
+  const between = (lo: number, hi: number) => lo + r() * (hi - lo);
+
+  const tintA = pick(TINTS);
+  const tintB = pick(TINTS.filter((t) => t !== tintA));
+  const angle = Math.floor(between(0, 360));
+
+  const glows = Array.from({ length: 3 }, (_, i) => {
+    const cx = between(-0.1, 1.1) * W;
+    const cy = between(-0.05, 1.05) * H;
+    const rad = between(0.35, 0.8) * W;
+    return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${rad.toFixed(0)}" fill="url(#glow${i})"/>`;
+  }).join("");
+
+  const glowDefs = Array.from({ length: 3 }, (_, i) => {
+    const tint = pick(TINTS);
+    const strength = between(0.16, 0.34).toFixed(2);
+    return `<radialGradient id="glow${i}">
+      <stop offset="0%" stop-color="${tint}" stop-opacity="${strength}"/>
+      <stop offset="100%" stop-color="${tint}" stop-opacity="0"/>
+    </radialGradient>`;
+  }).join("");
+
+  const motif = pick(["lines", "arcs", "grid", "traces", "none"]);
+  let motifSvg = "";
+
+  if (motif === "lines") {
+    const gap = between(46, 96);
+    const tilt = between(-32, 32);
+    motifSvg = Array.from({ length: Math.ceil(H / gap) + 14 }, (_, i) => {
+      const y = i * gap - H * 0.4;
+      return `<line x1="-100" y1="${y.toFixed(0)}" x2="${W + 100}" y2="${(y + W * Math.tan((tilt * Math.PI) / 180)).toFixed(0)}" stroke="#3b7dff" stroke-opacity="0.055" stroke-width="1.5"/>`;
+    }).join("");
+  } else if (motif === "arcs") {
+    const cx = between(-0.2, 1.2) * W;
+    const cy = between(-0.2, 1.2) * H;
+    motifSvg = Array.from({ length: 9 }, (_, i) => {
+      const rad = (i + 1) * between(80, 150);
+      return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${rad.toFixed(0)}" fill="none" stroke="#3b7dff" stroke-opacity="0.06" stroke-width="1.6"/>`;
+    }).join("");
+  } else if (motif === "grid") {
+    const gap = between(58, 104);
+    const dots: string[] = [];
+    for (let x = gap / 2; x < W; x += gap) {
+      for (let y = gap / 2; y < H; y += gap) {
+        dots.push(
+          `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${between(1, 2.4).toFixed(1)}" fill="#4a5670" fill-opacity="${between(0.14, 0.42).toFixed(2)}"/>`,
+        );
+      }
+    }
+    motifSvg = dots.join("");
+  } else if (motif === "traces") {
+    // Right-angled paths, echoing the circuit lines in the site's own mark.
+    motifSvg = Array.from({ length: 7 }, () => {
+      let x = between(0, W);
+      let y = between(0, H);
+      const parts = [`M ${x.toFixed(0)} ${y.toFixed(0)}`];
+      for (let s = 0; s < 5; s += 1) {
+        if (r() > 0.5) x += between(-260, 260);
+        else y += between(-260, 260);
+        parts.push(`L ${x.toFixed(0)} ${y.toFixed(0)}`);
+      }
+      return `<path d="${parts.join(" ")}" fill="none" stroke="#3b7dff" stroke-opacity="0.07" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="4" fill="#3b7dff" fill-opacity="0.12"/>`;
+    }).join("");
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+  <defs>
+    <linearGradient id="base" gradientTransform="rotate(${angle})">
+      <stop offset="0%" stop-color="${tintA}" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="${tintB}" stop-opacity="0.14"/>
+    </linearGradient>
+    ${glowDefs}
+  </defs>
+  <rect width="${W}" height="${H}" fill="${BG}"/>
+  <rect width="${W}" height="${H}" fill="url(#base)"/>
+  ${glows}
+  ${motifSvg}
+</svg>`;
 }
 
 /**
- * Scrim over the background image.
+ * Veil between the generated background and the text.
  *
- * Tuned by looking at the result: the first pass sat at 0.84–0.94, which over
- * images this dark rendered as flat black — the background may as well not
- * have been there. These values let the texture read while keeping body copy
- * comfortable, and the text block sits over the lighter middle band where the
- * scrim is deepest.
+ * Light, because the background is now drawn rather than photographed — its
+ * tints are already low-opacity over the base colour, so there is no bright
+ * area to suppress. A heavy scrim here would just hide the artwork, which is
+ * what happened when these were photographs.
  */
 const SCRIM = `
 <defs>
   <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${BG}" stop-opacity="0.40"/>
-    <stop offset="28%" stop-color="${BG}" stop-opacity="0.66"/>
-    <stop offset="72%" stop-color="${BG}" stop-opacity="0.66"/>
-    <stop offset="100%" stop-color="${BG}" stop-opacity="0.42"/>
+    <stop offset="0%" stop-color="${BG}" stop-opacity="0.10"/>
+    <stop offset="40%" stop-color="${BG}" stop-opacity="0.28"/>
+    <stop offset="100%" stop-color="${BG}" stop-opacity="0.16"/>
   </linearGradient>
 </defs>
 <rect width="${W}" height="${H}" fill="url(#scrim)"/>`;
@@ -456,26 +542,9 @@ function hashtags(categorySlug: string, tags: string[]): string {
   return all.map((t) => `#${t}`).join(" ");
 }
 
-/** Fetches a background and composites the slide's text layer over it. */
-async function writeSlide(path: string, svg: string, backgroundId: string): Promise<void> {
-  const url = `https://images.unsplash.com/${backgroundId}?w=${W}&h=${H}&fit=crop&crop=entropy&q=80`;
-  const res = await fetch(url);
-
-  // A background is decoration. If one fails to fetch, the slide should still
-  // be produced — the scrim colour is the same flat dark either way.
-  if (!res.ok) {
-    console.warn(`[carousel] background ${res.status} for ${backgroundId} — flat fallback`);
-    await sharp({
-      create: { width: W, height: H, channels: 3, background: BG },
-    })
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .png()
-      .toFile(path);
-    return;
-  }
-
-  await sharp(Buffer.from(await res.arrayBuffer()))
-    .resize(W, H, { fit: "cover", position: "centre" })
+/** Draws the background for this slide and composites the text layer over it. */
+async function writeSlide(path: string, svg: string, index: number): Promise<void> {
+  await sharp(Buffer.from(backgroundSvg(slug, index)))
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .png()
     .toFile(path);
@@ -483,9 +552,8 @@ async function writeSlide(path: string, svg: string, backgroundId: string): Prom
 
 await writeCover(`${dir}/01-cover.png`);
 
-const backgrounds = pickBackgrounds(slug, slides.length);
 for (let i = 0; i < slides.length; i += 1) {
-  await writeSlide(`${dir}/${slides[i].name}.png`, slides[i].svg, backgrounds[i]);
+  await writeSlide(`${dir}/${slides[i].name}.png`, slides[i].svg, i);
 }
 
 const caption = `${article.title}
