@@ -421,6 +421,41 @@ const slides: { name: string; svg: string }[] = [
   { name: `${String(picked.length + 2).padStart(2, "0")}-cta`, svg: ctaSlide(article.title) },
 ];
 
+/**
+ * Broad hashtags by category, added alongside the article's own tags.
+ *
+ * The article tags alone are far too specific to be found — #cisakev and
+ * #operationaltechnology are accurate and almost nobody searches them. An
+ * account with no followers is discovered through hashtags or not at all, so
+ * the caption needs a layer people actually browse as well as the precise
+ * ones that reach the right readers.
+ */
+const BROAD_HASHTAGS: Record<string, string[]> = {
+  security: [
+    "cybersecurity",
+    "infosec",
+    "cybersecuritynews",
+    "hacking",
+    "technews",
+    "datasecurity",
+  ],
+  ai: ["artificialintelligence", "ai", "aisecurity", "technology", "technews", "machinelearning"],
+  startups: ["startups", "startupnews", "venturecapital", "founders", "technews", "business"],
+  gadgets: ["gadgets", "technology", "technews", "hardware", "tech", "consumertech"],
+  world: ["technews", "technology", "policy", "privacy", "regulation", "digitalrights"],
+};
+
+/**
+ * Instagram allows 30. Fewer, better-chosen ones read less like spam, and the
+ * broad set goes first because that is what gets browsed.
+ */
+function hashtags(categorySlug: string, tags: string[]): string {
+  const broad = BROAD_HASHTAGS[categorySlug] ?? BROAD_HASHTAGS.security;
+  const niche = tags.map((t) => t.replace(/-/g, ""));
+  const all = [...new Set([...broad, ...niche])].slice(0, 16);
+  return all.map((t) => `#${t}`).join(" ");
+}
+
 /** Fetches a background and composites the slide's text layer over it. */
 async function writeSlide(path: string, svg: string, backgroundId: string): Promise<void> {
   const url = `https://images.unsplash.com/${backgroundId}?w=${W}&h=${H}&fit=crop&crop=entropy&q=80`;
@@ -460,7 +495,7 @@ ${article.excerpt}
 Full piece: ${siteConfig.url}/article/${article.slug}
 (link in bio)
 
-${(article.tags ?? []).map((t: string) => `#${t.replace(/-/g, "")}`).join(" ")}`;
+${hashtags(article.categorySlug, article.tags ?? [])}`;
 
 writeFileSync(`${dir}/caption.txt`, caption, "utf8");
 
