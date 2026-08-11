@@ -74,15 +74,62 @@ function tspans(lines: string[], x: number, y: number, lineHeight: number): stri
     .join("");
 }
 
-/** Faint dotted grid, same texture as the article covers. */
-const GRID = `
+/**
+ * Backgrounds for the content slides. Every id has been fetched and looked at.
+ *
+ * Deliberately dark, abstract and textural rather than illustrative: a slide
+ * carries three or four lines of body copy, and a photograph with subjects in
+ * it competes with the text no matter how heavy the scrim. These read as
+ * surface, which is what a background should do.
+ */
+const BACKGROUNDS = [
+  "photo-1578662996442-48f60103fc96",
+  "photo-1596865249308-2472dc5807d7",
+  "photo-1585314062340-f1a5a7c9328d",
+  "photo-1690983320828-c01b88baacb0",
+  "photo-1710438399422-2fca27686bcd",
+  "photo-1567095751004-aa51a2690368",
+  "photo-1693648793394-0b76b7eb042e",
+  "photo-1608501821300-4f99e58bba77",
+  "photo-1566410824233-a8011929225c",
+  "photo-1638376776402-9a4b75fe21bb",
+  "photo-1709377058964-929af7f2d02f",
+];
+
+/**
+ * A distinct background per slide, and a different run of them per article —
+ * two carousels posted the same week shouldn't open with the same texture.
+ * Deterministic so regenerating a carousel produces the same set.
+ */
+function pickBackgrounds(slug: string, count: number): string[] {
+  let hash = 0;
+  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) % 100000;
+  const start = hash % BACKGROUNDS.length;
+  return Array.from(
+    { length: count },
+    (_, i) => BACKGROUNDS[(start + i) % BACKGROUNDS.length],
+  );
+}
+
+/**
+ * Scrim over the background image.
+ *
+ * Tuned by looking at the result: the first pass sat at 0.84–0.94, which over
+ * images this dark rendered as flat black — the background may as well not
+ * have been there. These values let the texture read while keeping body copy
+ * comfortable, and the text block sits over the lighter middle band where the
+ * scrim is deepest.
+ */
+const SCRIM = `
 <defs>
-  <pattern id="g" width="44" height="44" patternUnits="userSpaceOnUse">
-    <circle cx="1" cy="1" r="1.2" fill="#2c3a52" opacity="0.35"/>
-  </pattern>
+  <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${BG}" stop-opacity="0.40"/>
+    <stop offset="28%" stop-color="${BG}" stop-opacity="0.66"/>
+    <stop offset="72%" stop-color="${BG}" stop-opacity="0.66"/>
+    <stop offset="100%" stop-color="${BG}" stop-opacity="0.42"/>
+  </linearGradient>
 </defs>
-<rect width="${W}" height="${H}" fill="${BG}"/>
-<rect width="${W}" height="${H}" fill="url(#g)"/>`;
+<rect width="${W}" height="${H}" fill="url(#scrim)"/>`;
 
 const FOOTER = `
 <line x1="${PAD}" y1="${H - 150}" x2="${W - PAD}" y2="${H - 150}" stroke="${LINE}" stroke-width="2"/>
@@ -140,7 +187,7 @@ function coverSlide(category: string, title: string, dateLabel: string): string 
   const blockTop = Math.max(340, (H - 150 - 190 - lines.length * 84) / 2 + 190);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-${GRID}
+${SCRIM}
 <text x="${PAD}" y="${PAD + 40}" font-family="${MONO}" font-size="27" letter-spacing="7" fill="${ACCENT}">${esc(
     category.toUpperCase(),
   )}</text>
@@ -189,7 +236,7 @@ function pointSlide(
     : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-${GRID}
+${SCRIM}
 <text x="${PAD}" y="${PAD + 40}" font-family="${MONO}" font-size="27" letter-spacing="5" fill="${ACCENT}">${String(
     index,
   ).padStart(2, "0")} / ${String(total).padStart(2, "0")}</text>
@@ -217,7 +264,7 @@ function ctaSlide(title: string): string {
   const panelY = (H - 150 - 190 - panelH) / 2 + 190;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-${GRID}
+${SCRIM}
 <rect x="${PAD}" y="${panelY}" width="${W - PAD * 2}" height="${panelH}" rx="18" fill="${PANEL}" stroke="${LINE}" stroke-width="2"/>
 <text x="${PAD + 48}" y="${panelY + 82}" font-family="${MONO}" font-size="28" letter-spacing="5" fill="${ACCENT}">$ read --full</text>
 <text font-family="${SANS}" font-size="44" font-weight="600" fill="${FG}">${tspans(
@@ -365,9 +412,36 @@ const slides: { name: string; svg: string }[] = [
   { name: `${String(picked.length + 2).padStart(2, "0")}-cta`, svg: ctaSlide(article.title) },
 ];
 
+/** Fetches a background and composites the slide's text layer over it. */
+async function writeSlide(path: string, svg: string, backgroundId: string): Promise<void> {
+  const url = `https://images.unsplash.com/${backgroundId}?w=${W}&h=${H}&fit=crop&crop=entropy&q=80`;
+  const res = await fetch(url);
+
+  // A background is decoration. If one fails to fetch, the slide should still
+  // be produced — the scrim colour is the same flat dark either way.
+  if (!res.ok) {
+    console.warn(`[carousel] background ${res.status} for ${backgroundId} — flat fallback`);
+    await sharp({
+      create: { width: W, height: H, channels: 3, background: BG },
+    })
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .png()
+      .toFile(path);
+    return;
+  }
+
+  await sharp(Buffer.from(await res.arrayBuffer()))
+    .resize(W, H, { fit: "cover", position: "centre" })
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+    .png()
+    .toFile(path);
+}
+
 await writeCover(`${dir}/01-cover.png`);
-for (const slide of slides) {
-  await sharp(Buffer.from(slide.svg)).png().toFile(`${dir}/${slide.name}.png`);
+
+const backgrounds = pickBackgrounds(slug, slides.length);
+for (let i = 0; i < slides.length; i += 1) {
+  await writeSlide(`${dir}/${slides[i].name}.png`, slides[i].svg, backgrounds[i]);
 }
 
 const caption = `${article.title}
