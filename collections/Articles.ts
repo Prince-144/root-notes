@@ -36,6 +36,32 @@ export const Articles: CollectionConfig = {
     defaultColumns: ["title", "status", "categorySlug", "publishedAt", "featured"],
   },
   hooks: {
+    /**
+     * Stamp publishedAt at the moment of publishing, not at the moment the
+     * draft was created. Drafts are written days ahead of time, so the
+     * creation-time default would put a date on the live site that has nothing
+     * to do with when readers could first see the article.
+     *
+     * Skipped when the editor set the date themselves in the same write —
+     * backdating or scheduling a specific time is a deliberate act and this
+     * should not silently undo it.
+     */
+    beforeChange: [
+      ({ data, originalDoc, operation }) => {
+        if (data.status !== "published") return data;
+        if (originalDoc?.status === "published") return data;
+
+        if (operation === "update") {
+          const incoming = data.publishedAt ? new Date(data.publishedAt).getTime() : null;
+          const previous = originalDoc?.publishedAt
+            ? new Date(originalDoc.publishedAt).getTime()
+            : null;
+          if (incoming !== null && previous !== null && incoming !== previous) return data;
+        }
+
+        return { ...data, publishedAt: new Date().toISOString() };
+      },
+    ],
     afterChange: [
       ({ doc, previousDoc }) => {
         revalidateArticlePaths(doc);
@@ -142,12 +168,25 @@ export const Articles: CollectionConfig = {
     },
     { name: "tags", type: "text", hasMany: true },
     { name: "author", type: "text", required: true },
+    /**
+     * Hidden while the article is a draft. The value exists (it is required,
+     * and defaults on create) but until the beforeChange hook stamps it at
+     * publish time it means nothing, and showing it invites editors to read a
+     * draft's creation date as a publication date.
+     */
     {
       name: "publishedAt",
       type: "date",
       required: true,
       defaultValue: () => new Date().toISOString(),
-      admin: { date: { pickerAppearance: "dayAndTime" }, position: "sidebar" },
+      admin: {
+        date: { pickerAppearance: "dayAndTime" },
+        position: "sidebar",
+        condition: (data) => data?.status === "published",
+        components: {
+          Cell: "@/components/admin/published-at-cell#PublishedAtCell",
+        },
+      },
     },
     { name: "readingMinutes", type: "number", required: true, min: 1 },
     { name: "featured", type: "checkbox", defaultValue: false, admin: { position: "sidebar" } },
