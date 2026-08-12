@@ -6,6 +6,8 @@
  * Components reachable from a "use client" component must import from here
  * instead.
  */
+import { siteConfig } from "@/site.config";
+
 /**
  * Everything a list view needs — cards, rows, search, feeds, sitemap.
  *
@@ -42,6 +44,13 @@ export type Article = ArticleSummary & {
   updatedAt?: string;
 };
 
+/**
+ * Rendered in the site's own timezone, not the server's. toISOString() is UTC,
+ * so an article published at 00:30 IST was being dated to the previous day on
+ * every page that showed it. en-CA is the locale that formats as YYYY-MM-DD.
+ */
 export function formatDate(iso: string): string {
-  return new Date(iso).toISOString().slice(0, 10); // 2026-08-04
+  return new Date(iso).toLocaleDateString("en-CA", {
+    timeZone: siteConfig.timeZone,
+  }); // 2026-08-04
 }

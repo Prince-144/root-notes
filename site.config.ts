@@ -12,6 +12,12 @@ export const siteConfig = {
     "Daily security and infrastructure reporting: vulnerabilities, breaches, supply-chain attacks and the tooling that holds it together. Every post explains why it matters before it explains what happened.",
   url: "https://rootnotes.in",
   locale: "en_US",
+  /**
+   * The newsroom's clock. Dates are rendered in this zone rather than the
+   * server's, which on Vercel is UTC — an article published at 00:30 IST would
+   * otherwise carry the previous day's date for every reader.
+   */
+  timeZone: "Asia/Kolkata",
   author: "Prince Baruwala",
   contactEmail: "hello@rootnotes.in",
   // GA4 measurement ID — not secret, it's embedded in every page's HTML anyway.
