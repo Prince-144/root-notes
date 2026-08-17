@@ -147,20 +147,35 @@
     border-radius: 2px;
   }
 
+  /**
+   * Page scrollbar, same treatment as .scroll-ghost below: transparent track,
+   * a thumb faint enough to disappear against the background until you look
+   * for it. The site is a dark reading surface and a solid grey bar down the
+   * edge was the brightest thing on the page.
+   *
+   * Firefox takes scrollbar-color; WebKit needs the pseudo-elements. Both are
+   * set so the two engines match.
+   */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.06) transparent;
+  }
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--bg);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--line-strong);
+    background: rgb(255 255 255 / 0.06);
     border-radius: 999px;
-    border: 2px solid var(--bg);
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-shell-500);
+    background: rgb(255 255 255 / 0.16);
+    background-clip: padding-box;
   }
 
   @media (prefers-reduced-motion: reduce) {

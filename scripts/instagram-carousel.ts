@@ -12,7 +12,7 @@
  * under each, so the carousel follows the piece rather than being written
  * twice and drifting from it.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -42,8 +42,12 @@ const BODY_ON_IMAGE = "#d5dde8";
 const MONO = "Consolas, 'DejaVu Sans Mono', monospace";
 const SANS = "'Segoe UI', Arial, sans-serif";
 
-/** Instagram crops nothing at 4:5, but faces of text still need margin. */
-const MAX_SLIDES = 10; // the API caps carousels at 10; keep parity with it
+/**
+ * Cover + three points + CTA. The API allows ten, but a five-card carousel is
+ * what people actually swipe to the end of — eight cards of dense text is a
+ * newsletter someone scrolls past.
+ */
+const POINT_SLIDES = 3;
 
 function esc(s: string): string {
   return s
@@ -87,16 +91,15 @@ function tspans(lines: string[], x: number, y: number, lineHeight: number): stri
  * Backgrounds are generated rather than fetched.
  *
  * A stock pool always runs out — eleven images against eight slides a post
- * meant the second carousel necessarily repeated the first. Drawing them
+ * meant the second carousel necessarily repeated the first. Generating them
  * gives an unlimited supply, keeps every one inside the site's palette
  * instead of whatever a photographer happened to shoot, and removes a
  * network call per slide.
  *
- * Seeded from the slug and slide index, so regenerating a carousel produces
- * exactly the same artwork.
+ * Seeded from the slug, so regenerating a carousel reproduces it exactly.
  */
 
-/** mulberry32 — small, seedable, and good enough for placing shapes. */
+/** mulberry32  small, seedable, and good enough for choosing a field. */
 function rng(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -117,111 +120,49 @@ function seedFrom(slug: string, index: number): number {
 }
 
 /** Deep blues and slates only — anything warmer stops looking like the site. */
-const TINTS = ["#1b3a6b", "#16305c", "#1f4a7a", "#233a5e", "#2c3a52", "#14283f"];
+const FIELDS = ["#0b1d3d", "#0d2233", "#111a33", "#0a2430", "#121a2c", "#0e1f2e"];
 
 /**
- * Three layers: a base wash, soft glows, and one structural motif. The motif
- * varies by seed so consecutive slides don't share a silhouette, and every
- * opacity is low — this sits under body copy and has to stay a background.
+ * Poster background: a single graded field, nothing on top of it.
+ *
+ * Earlier versions drew cyber texture — circuits, node graphs, hex dumps —
+ * and then an oversized figure lifted from the slide's own sentence. Both
+ * competed with the copy for the same attention. The colour still shifts per
+ * slide so a swipe registers as a new card.
  */
 function backgroundSvg(slug: string, index: number): string {
   const r = rng(seedFrom(slug, index));
-  const pick = <T,>(xs: T[]): T => xs[Math.floor(r() * xs.length)];
-  const between = (lo: number, hi: number) => lo + r() * (hi - lo);
 
-  const tintA = pick(TINTS);
-  const tintB = pick(TINTS.filter((t) => t !== tintA));
-  const angle = Math.floor(between(0, 360));
-
-  const glows = Array.from({ length: 3 }, (_, i) => {
-    const cx = between(-0.1, 1.1) * W;
-    const cy = between(-0.05, 1.05) * H;
-    const rad = between(0.35, 0.8) * W;
-    return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${rad.toFixed(0)}" fill="url(#glow${i})"/>`;
-  }).join("");
-
-  const glowDefs = Array.from({ length: 3 }, (_, i) => {
-    const tint = pick(TINTS);
-    const strength = between(0.16, 0.34).toFixed(2);
-    return `<radialGradient id="glow${i}">
-      <stop offset="0%" stop-color="${tint}" stop-opacity="${strength}"/>
-      <stop offset="100%" stop-color="${tint}" stop-opacity="0"/>
-    </radialGradient>`;
-  }).join("");
-
-  const motif = pick(["lines", "arcs", "grid", "traces", "none"]);
-  let motifSvg = "";
-
-  if (motif === "lines") {
-    const gap = between(46, 96);
-    const tilt = between(-32, 32);
-    motifSvg = Array.from({ length: Math.ceil(H / gap) + 14 }, (_, i) => {
-      const y = i * gap - H * 0.4;
-      return `<line x1="-100" y1="${y.toFixed(0)}" x2="${W + 100}" y2="${(y + W * Math.tan((tilt * Math.PI) / 180)).toFixed(0)}" stroke="#3b7dff" stroke-opacity="0.055" stroke-width="1.5"/>`;
-    }).join("");
-  } else if (motif === "arcs") {
-    const cx = between(-0.2, 1.2) * W;
-    const cy = between(-0.2, 1.2) * H;
-    motifSvg = Array.from({ length: 9 }, (_, i) => {
-      const rad = (i + 1) * between(80, 150);
-      return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${rad.toFixed(0)}" fill="none" stroke="#3b7dff" stroke-opacity="0.06" stroke-width="1.6"/>`;
-    }).join("");
-  } else if (motif === "grid") {
-    const gap = between(58, 104);
-    const dots: string[] = [];
-    for (let x = gap / 2; x < W; x += gap) {
-      for (let y = gap / 2; y < H; y += gap) {
-        dots.push(
-          `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${between(1, 2.4).toFixed(1)}" fill="#4a5670" fill-opacity="${between(0.14, 0.42).toFixed(2)}"/>`,
-        );
-      }
-    }
-    motifSvg = dots.join("");
-  } else if (motif === "traces") {
-    // Right-angled paths, echoing the circuit lines in the site's own mark.
-    motifSvg = Array.from({ length: 7 }, () => {
-      let x = between(0, W);
-      let y = between(0, H);
-      const parts = [`M ${x.toFixed(0)} ${y.toFixed(0)}`];
-      for (let s = 0; s < 5; s += 1) {
-        if (r() > 0.5) x += between(-260, 260);
-        else y += between(-260, 260);
-        parts.push(`L ${x.toFixed(0)} ${y.toFixed(0)}`);
-      }
-      return `<path d="${parts.join(" ")}" fill="none" stroke="#3b7dff" stroke-opacity="0.07" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="4" fill="#3b7dff" fill-opacity="0.12"/>`;
-    }).join("");
-  }
+  // Offset the palette by the slug so two articles do not open identically,
+  // then step by index so no two consecutive slides share a field.
+  const start = Math.floor(r() * FIELDS.length);
+  const field = FIELDS[(start + index) % FIELDS.length];
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
   <defs>
-    <linearGradient id="base" gradientTransform="rotate(${angle})">
-      <stop offset="0%" stop-color="${tintA}" stop-opacity="0.30"/>
-      <stop offset="100%" stop-color="${tintB}" stop-opacity="0.14"/>
+    <linearGradient id="field" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="${field}"/>
+      <stop offset="100%" stop-color="${BG}"/>
     </linearGradient>
-    ${glowDefs}
   </defs>
-  <rect width="${W}" height="${H}" fill="${BG}"/>
-  <rect width="${W}" height="${H}" fill="url(#base)"/>
-  ${glows}
-  ${motifSvg}
+  <rect width="${W}" height="${H}" fill="url(#field)"/>
 </svg>`;
 }
 
 /**
- * Veil between the generated background and the text.
+ * Veil between the background and the text.
  *
- * Light, because the background is now drawn rather than photographed — its
- * tints are already low-opacity over the base colour, so there is no bright
- * area to suppress. A heavy scrim here would just hide the artwork, which is
- * what happened when these were photographs.
+ * Barely there, because the field behind it is flat and the figure sits at 7%
+ *  there is nothing to suppress. It exists only to keep the very top and
+ * bottom of the field from washing out the counter and the footer.
  */
 const SCRIM = `
 <defs>
   <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${BG}" stop-opacity="0.10"/>
-    <stop offset="40%" stop-color="${BG}" stop-opacity="0.28"/>
-    <stop offset="100%" stop-color="${BG}" stop-opacity="0.16"/>
+    <stop offset="0%" stop-color="${BG}" stop-opacity="0.22"/>
+    <stop offset="30%" stop-color="${BG}" stop-opacity="0.06"/>
+    <stop offset="78%" stop-color="${BG}" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="${BG}" stop-opacity="0.24"/>
   </linearGradient>
 </defs>
 <rect width="${W}" height="${H}" fill="url(#scrim)"/>`;
@@ -388,8 +329,10 @@ function clean(text: string): string {
  * account they are usually the strongest line on the page, and skipping them
  * left slides ending on a dangling "In his words:" with the words missing.
  */
-function sections(body: string): { heading: string; text: string; isQuote: boolean }[] {
-  const out: { heading: string; text: string; isQuote: boolean }[] = [];
+type Section = { heading: string; text: string; isQuote: boolean; source: string };
+
+function sections(body: string): Section[] {
+  const out: Section[] = [];
 
   for (const block of body.split(/\n(?=## )/)) {
     const match = block.match(/^## (.+)/);
@@ -411,8 +354,14 @@ function sections(body: string): { heading: string; text: string; isQuote: boole
     // threw away every paragraph opening with bold — "**Atlassian** cut 1,600
     // people while stating..." — which is exactly where the substance tends to
     // be, so sections fell back to their framing sentence.
+    // Numbered lists matter as much as bulleted ones. Their items are single
+    // newlines apart, so the paragraph split keeps them together and clean()
+    // flattens them into one run-on sentence — "1. Start a password-recovery
+    // flow 2. Choose the AI support option 3. Tell the bot…" — which then
+    // overflows the slide and truncates mid-clause.
     const eligible = paragraphs.filter(
-      (p) => !/^([|>`#]|[-*+] )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
+      (p) =>
+        !/^([|>`#]|[-*+] |\d+\. )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
     );
 
     // Not the first eligible paragraph — the best one. A section often opens
@@ -424,19 +373,45 @@ function sections(body: string): { heading: string; text: string; isQuote: boole
       const t = clean(p);
       const digits = (t.match(/\d/g) ?? []).length;
       const lengthScore = Math.min(t.length, 420) / 100;
-      // Very long paragraphs get truncated on the slide, so cap the reward.
-      return (digits > 0 ? 3 : 0) + lengthScore;
+
+      // A paragraph opening on a bare demonstrative is answering the paragraph
+      // before it — "That bound is real and it is smaller comfort than it
+      // sounds" reads as a fragment on a slide, because the bound it refers to
+      // is not there. Penalised rather than excluded: if a section has nothing
+      // else, a fragment still beats no slide.
+      const backReference =
+        /^(that|this|these|those|it|they|such|both|neither|and|but|so|because|which|then|also|again|instead)\b/i.test(
+          t,
+        );
+
+      // pointSlide draws at most 11 body lines and drops the rest, which cuts
+      // mid-clause with nothing to signal it. Roughly 43 characters fit a line
+      // at the body size, so anything past ~460 will be silently truncated —
+      // penalise it rather than print half a sentence.
+      const overflows = t.length > 460;
+
+      return (digits > 0 ? 3 : 0) + lengthScore - (backReference ? 5 : 0) - (overflows ? 4 : 0);
     };
 
     const prose = eligible.slice().sort((a, b) => score(b) - score(a))[0];
 
-    const chosen = quote ?? prose;
+    // A quote is a strong slide but not automatically the best one. Always
+    // preferring it cost the Apple piece its sharpest section — the quoted
+    // boilerplate won over the paragraph that said the complaint names two
+    // people, not four hundred. Scored against the prose, with a thumb on the
+    // scale, so a good quote still usually wins.
+    const chosen =
+      quote && (!prose || score(quote) + 1.5 >= score(prose)) ? quote : (prose ?? quote);
     if (!chosen) continue;
 
     out.push({
       heading: match[1].trim(),
       text: clean(chosen.replace(/^>\s?/gm, "")),
-      isQuote: Boolean(quote),
+      isQuote: chosen === quote,
+      // The section as written, markdown intact — the background reads the
+      // bold spans to find the figure the author actually emphasised, and
+      // clean() strips exactly those markers.
+      source: block,
     });
   }
   return out;
@@ -465,7 +440,42 @@ if (!article) {
 const dir = `instagram/${slug}`;
 mkdirSync(dir, { recursive: true });
 
-const picked = sections(article.body).slice(0, MAX_SLIDES - 2);
+// Slide filenames carry their heading, so a re-run after an edit leaves the
+// previous name behind. That orphan then got swept into the Reel, which reads
+// whatever PNGs are in the directory.
+for (const stale of readdirSync(dir).filter((f) => f.endsWith(".png"))) {
+  rmSync(`${dir}/${stale}`);
+}
+
+/**
+ * The strongest three sections, kept in the article's own order.
+ *
+ * Scored on the sentence that will actually appear, not on the section around
+ * it. A section can be full of emphasised figures and still leave a weak slide
+ * when those figures live in a table — the reader sees only the paragraph, so
+ * that is what has to carry a digit and stand on its own.
+ */
+const picked = sections(article.body)
+  .map((s, i) => {
+    // Version strings are digits that carry no story. "Every release from 1.58
+    // onward, across branches 0.58 through 0.63" scored as a figures paragraph
+    // and produced a slide with two lines of build numbers on it.
+    const hasFigure = /\d/.test(s.text.replace(/\b\d+(?:\.\d+)+\b/g, ""));
+    const tooShort = s.text.length < 140;
+    return {
+      s,
+      i,
+      score:
+        (hasFigure ? 3 : 0) +
+        (s.isQuote ? 1 : 0) +
+        Math.min(s.text.length, 400) / 200 -
+        (tooShort ? 4 : 0),
+    };
+  })
+  .sort((a, b) => b.score - a.score)
+  .slice(0, POINT_SLIDES)
+  .sort((a, b) => a.i - b.i)
+  .map((x) => x.s);
 const total = picked.length;
 
 const dateLabel = article.publishedAt.slice(0, 10);
@@ -504,13 +514,16 @@ const slides: { name: string; svg: string }[] = [
     name: `${String(i + 2).padStart(2, "0")}-${s.heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 24)}`,
     svg: pointSlide(i + 1, total, s.heading, s.text, s.isQuote),
   })),
-  { name: `${String(picked.length + 2).padStart(2, "0")}-cta`, svg: ctaSlide(article.title) },
+  {
+    name: `${String(picked.length + 2).padStart(2, "0")}-cta`,
+    svg: ctaSlide(article.title),
+  },
 ];
 
 /**
  * Broad hashtags by category, added alongside the article's own tags.
  *
- * The article tags alone are far too specific to be found — #cisakev and
+ * The article tags alone are far too specific to be found  #cisakev and
  * #operationaltechnology are accurate and almost nobody searches them. An
  * account with no followers is discovered through hashtags or not at all, so
  * the caption needs a layer people actually browse as well as the precise

@@ -169,10 +169,14 @@ export const Articles: CollectionConfig = {
     { name: "tags", type: "text", hasMany: true },
     { name: "author", type: "text", required: true },
     /**
-     * Hidden while the article is a draft. The value exists (it is required,
-     * and defaults on create) but until the beforeChange hook stamps it at
-     * publish time it means nothing, and showing it invites editors to read a
-     * draft's creation date as a publication date.
+     * A draft's publishedAt is a placeholder until the beforeChange hook stamps
+     * it at publish time, so the Articles list renders an em dash for drafts
+     * rather than a date nobody should read as one.
+     *
+     * The field itself stays visible on the edit page. Hiding it with an
+     * `admin.condition` also makes Payload generate `publishedAt?: string |
+     * null` — a required field becomes optional across every consumer of
+     * payload-types, which is too much to give up for one hidden input.
      */
     {
       name: "publishedAt",
@@ -182,7 +186,7 @@ export const Articles: CollectionConfig = {
       admin: {
         date: { pickerAppearance: "dayAndTime" },
         position: "sidebar",
-        condition: (data) => data?.status === "published",
+        description: "Set automatically when the article is published.",
         components: {
           Cell: "@/components/admin/published-at-cell#PublishedAtCell",
         },

@@ -171,6 +171,9 @@ export interface Article {
   categorySlug: 'security' | 'ai' | 'startups' | 'gadgets' | 'world';
   tags?: string[] | null;
   author: string;
+  /**
+   * Set automatically when the article is published.
+   */
   publishedAt: string;
   readingMinutes: number;
   featured?: boolean | null;
