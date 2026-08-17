@@ -192,6 +192,27 @@
 /* ---------------------------------------------------------------
    UTILITIES
 ---------------------------------------------------------------- */
+
+/**
+ * Below lg the feed is normal page flow — a scroll region that tall would
+ * swallow the page gesture on a phone — so the rows are capped visually
+ * instead, keeping Coverage and the newsletter reachable there. Everything
+ * past the cap is one tap away through the search link under the feed.
+ *
+ * 30 matches what the homepage served before the full archive moved into the
+ * scrolling box on desktop.
+ *
+ * In @layer utilities rather than base: the rows carry Tailwind's `flex`
+ * utility, and a base-layer rule loses to it whatever its specificity.
+ */
+@layer utilities {
+  @media (max-width: 1023.98px) {
+    .feed-cap-mobile > *:nth-child(n + 31) {
+      display: none;
+    }
+  }
+}
+
 @utility container-page {
   width: 100%;
   margin-inline: auto;
