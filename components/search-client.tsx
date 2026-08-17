@@ -16,8 +16,14 @@ export function SearchClient({
   const [query, setQuery] = useState(initialQuery);
   const trimmed = query.trim();
 
+  /**
+   * With no query this lists everything rather than showing an empty page.
+   * The homepage caps its feed and links here as "view all", so this is the
+   * archive — arriving at a blank screen after clicking that would be a dead
+   * end for the reader and for anything crawling the link.
+   */
   const results = useMemo(
-    () => (trimmed ? articles.filter((a) => matchesQuery(a, query)) : []),
+    () => (trimmed ? articles.filter((a) => matchesQuery(a, query)) : articles),
     [articles, query, trimmed],
   );
 
@@ -42,14 +48,18 @@ export function SearchClient({
           </span>
         </Prompt>
 
-        {trimmed && (
-          <div className="mt-4 font-mono text-xs text-fg-subtle">
-            {results.length} result{results.length === 1 ? "" : "s"} for &quot;{trimmed}&quot;
-          </div>
-        )}
+        <div className="mt-4 font-mono text-xs text-fg-subtle">
+          {trimmed ? (
+            <>
+              {results.length} result{results.length === 1 ? "" : "s"} for &quot;{trimmed}&quot;
+            </>
+          ) : (
+            <>{articles.length} articles — type to filter</>
+          )}
+        </div>
       </TerminalWindow>
 
-      {trimmed && results.length > 0 && (
+      {results.length > 0 && (
         <div className="mt-12">
           {results.map((article) => (
             <ArticleRow key={article.slug} article={article} />
