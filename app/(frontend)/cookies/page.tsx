@@ -13,7 +13,7 @@ export default function CookiesPage() {
     <StaticPage promptCmd="cat cookie-policy.md" title="cookie-policy">
       <h1>Cookie Policy</h1>
       <p>
-        <em>Last updated: 2026</em>
+        <em>Last updated: 18 August 2026</em>
       </p>
 
       <p>

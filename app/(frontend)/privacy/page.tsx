@@ -13,13 +13,12 @@ export default function PrivacyPage() {
     <StaticPage promptCmd="cat privacy-policy.md" title="privacy-policy">
       <h1>Privacy Policy</h1>
       <p>
-        <em>Last updated: 2026</em>
+        <em>Last updated: 18 August 2026</em>
       </p>
 
       <p>
-        This is a template written to describe what {siteConfig.name} actually does today. It
-        is not legal advice — have it reviewed for your jurisdiction before treating it as
-        final.
+        {siteConfig.name} is operated from India. This page describes what we collect, why,
+        who processes it, and what you can ask us to do about it.
       </p>
 
       <h2>What we collect</h2>
@@ -58,6 +57,42 @@ export default function PrivacyPage() {
           visitor, per Google&apos;s own privacy policy.
         </li>
       </ul>
+
+      <h2>How long we keep it</h2>
+      <p>
+        Subscriber records are kept for as long as you stay subscribed. When you
+        unsubscribe, the record is retained only as long as needed to honour that
+        request — so that we do not re-add an address that asked to be removed — and is
+        deleted on request. Unconfirmed sign-ups are removed if they are never confirmed.
+        Server request logs held by our hosting provider follow that provider&apos;s own
+        retention schedule.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        Under India&apos;s Digital Personal Data Protection Act, and equivalent rights
+        elsewhere, you can ask us to:
+      </p>
+      <ul>
+        <li>tell you what personal data of yours we hold, and what we do with it</li>
+        <li>correct or complete anything inaccurate</li>
+        <li>erase it — for a newsletter subscription this is immediate and unconditional</li>
+        <li>withdraw consent, which for us means unsubscribing</li>
+      </ul>
+      <p>
+        Email{" "}
+        <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a> and we
+        will act on it. There is no form and no account required.
+      </p>
+
+      <h2>Grievances</h2>
+      <p>
+        If you are not satisfied with how we have handled your data or a request about it,
+        contact {siteConfig.author} at{" "}
+        <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>, who is
+        responsible for answering it. If the answer does not resolve the matter, Indian
+        users may escalate to the Data Protection Board of India.
+      </p>
 
       <h2>Unsubscribing</h2>
       <p>

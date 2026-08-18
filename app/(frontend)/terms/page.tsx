@@ -13,12 +13,7 @@ export default function TermsPage() {
     <StaticPage promptCmd="cat terms-of-use.md" title="terms-of-use">
       <h1>Terms of Use</h1>
       <p>
-        <em>Last updated: 2026</em>
-      </p>
-
-      <p>
-        This is a generic starting template, not legal advice — have it reviewed before
-        treating it as final.
+        <em>Last updated: 18 August 2026</em>
       </p>
 
       <h2>Content</h2>
