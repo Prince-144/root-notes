@@ -10,6 +10,8 @@ import { CategoryChip, MetaChip } from "@/components/tag-chip";
 import { BackButton } from "@/components/back-button";
 import { ViewTracker } from "@/components/view-tracker";
 import { formatDate, getArticles, getBySlug, getRelated, tagToSlug } from "@/lib/articles";
+import { ShareLinks } from "@/components/share-links";
+import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
 
 export async function generateStaticParams() {
@@ -57,7 +59,7 @@ export default async function ArticlePage({
   if (!article) notFound();
 
   const category = getCategory(article.categorySlug);
-  const related = await getRelated(article, 3);
+  const related = await getRelated(article, 6);
 
   const articleUrl = `${siteConfig.url}/article/${article.slug}`;
   const categoryUrl = `${siteConfig.url}/category/${category.slug}`;
@@ -174,6 +176,15 @@ export default async function ArticlePage({
             {tag}
           </Link>
         ))}
+      </div>
+
+      <ShareLinks title={article.title} slug={article.slug} />
+
+      {/* The ask goes here rather than only on the homepage: someone who has
+          read to the bottom of a piece has already decided whether they want
+          more of them, which is the one moment the question is worth asking. */}
+      <div className="mx-auto mt-10 max-w-content">
+        <NewsletterBox />
       </div>
 
       <RelatedPosts articles={related} />

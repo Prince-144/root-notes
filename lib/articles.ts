@@ -182,15 +182,33 @@ export const getBySlug = cache(async (slug: string): Promise<Article | undefined
     : undefined;
 });
 
-/** Same-category articles first, newest first, backfilled from the rest if the category runs short. */
+/**
+ * Ranked by shared tags first, then category, then recency.
+ *
+ * This used to be "same category, newest first", which on a site that
+ * publishes several security pieces a day meant the related list was just the
+ * last three security articles — no relationship to what the reader had
+ * actually been reading about. Tags carry the subject; category only carries
+ * the section.
+ */
 export async function getRelated(
   article: ArticleSummary,
-  limit = 3,
+  limit = 6,
 ): Promise<ArticleSummary[]> {
   const rest = (await getArticles()).filter((a) => a.slug !== article.slug);
-  const sameCategory = rest.filter((a) => a.categorySlug === article.categorySlug);
-  const others = rest.filter((a) => a.categorySlug !== article.categorySlug);
-  return [...sameCategory, ...others].slice(0, limit);
+  const tags = new Set((article.tags ?? []).map((t) => t.toLowerCase()));
+
+  const scored = rest.map((a) => {
+    const shared = (a.tags ?? []).filter((t) => tags.has(t.toLowerCase())).length;
+    const sameCategory = a.categorySlug === article.categorySlug ? 1 : 0;
+
+    // Tags dominate: one shared tag should outrank any amount of "also filed
+    // under security". Recency only separates articles that tie on both.
+    return { a, score: shared * 10 + sameCategory, when: Date.parse(a.publishedAt) };
+  });
+
+  scored.sort((x, y) => y.score - x.score || y.when - x.when);
+  return scored.slice(0, limit).map((s) => s.a);
 }
 
 /**
