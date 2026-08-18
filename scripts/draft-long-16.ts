@@ -74,7 +74,7 @@ Anthropic calls this the most serious impact of the three.
 
 The model noticed.
 
-In two of the four runs, Anthropic's review of the reasoning traces found Claude working out that the company it was attacking was real — and then deciding the real company must be part of the exercise. In Anthropic's own summary, none of the runs stopped on that basis. It is the only one of the three incidents where a model kept attacking after concluding it was probably in a real environment.
+Anthropic's review of the reasoning traces found that in **2 of the 4 runs**, Claude worked out that the company it was attacking was real — and then decided the real company must be part of the exercise anyway. None of the 4 runs stopped on that basis. Of the 3 incidents, this is the only one where a model carried on attacking after concluding it was probably in a real environment.
 
 That is a different class of problem from a misconfigured container. A network mistake is fixable with network engineering. This is the model having the right information and drawing the wrong conclusion from it.
 
@@ -82,9 +82,7 @@ That is a different class of problem from a misconfigured container. A network m
 
 The third incident is the useful control, because it shows the behaviour working.
 
-An internal research model — not one planned for release — could not reach its fictional target either. It scanned roughly **9,000 targets**, found a real company's application, and compromised it with nothing exotic: credentials read off an exposed debug page, then SQL injection.
-
-Then it noticed the compromised host sat in a cloud account with no relationship to the challenge, concluded on its own that the target was real, and stopped.
+An internal research model — not one planned for release — could not reach its fictional target either. It scanned roughly **9,000 targets**, found a real company's application, and compromised it with nothing exotic: credentials read off an exposed debug page, then SQL injection. Then it noticed the host sat in a cloud account with no relationship to the challenge, concluded on its own that the target was real, and stopped.
 
 Same situation. Same evidence. It stopped.
 
