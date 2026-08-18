@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { siteConfig } from "@/site.config";
 
@@ -43,6 +43,28 @@ export function CookieConsent() {
     return () => window.removeEventListener("rn-consent-reset", onReset);
   }, []);
 
+  // Publishes the banner's height to CSS so the page and the sticky header can
+  // move down by exactly that much. Observed rather than hard-coded: the text
+  // wraps to two lines on a phone and one on a desktop, and the height changes
+  // with the reader's font size.
+  const banner = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = banner.current;
+    const root = document.documentElement;
+    if (!el) {
+      root.style.setProperty("--consent-h", "0px");
+      return;
+    }
+    const ro = new ResizeObserver(([entry]) => {
+      root.style.setProperty("--consent-h", `${entry.contentRect.height}px`);
+    });
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.setProperty("--consent-h", "0px");
+    };
+  }, [choice]);
+
   function decide(next: Choice) {
     try {
       localStorage.setItem(KEY, next);
@@ -57,11 +79,15 @@ export function CookieConsent() {
     <>
       {choice === "granted" && <GoogleAnalytics gaId={siteConfig.googleAnalyticsId} />}
 
+      {/* Sits above the sticky header rather than along the bottom edge. The
+          effect above offsets the page while it is up so it never covers the
+          navigation. */}
       {choice === null && (
         <div
+          ref={banner}
           role="dialog"
           aria-label="Analytics cookies"
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-panel/95 backdrop-blur"
+          className="consent-banner fixed inset-x-0 top-0 z-50 border-b border-line bg-panel/95 backdrop-blur"
         >
           <div className="container-page flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-sm leading-relaxed text-fg-muted">
@@ -116,7 +142,7 @@ export function ResetConsentButton() {
       }}
       className="font-mono text-sm text-accent underline underline-offset-4 hover:opacity-70"
     >
-      {done ? "Cleared — the banner is back at the bottom of the page." : "Change my choice"}
+      {done ? "Cleared — the banner is back at the top of the page." : "Change my choice"}
     </button>
   );
 }

@@ -12,7 +12,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-md">
+    <header className="site-header sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-md">
       <div className="container-page flex h-14 items-center justify-between gap-4">
         {/* Wordmark — terminal prompt style */}
         <Link

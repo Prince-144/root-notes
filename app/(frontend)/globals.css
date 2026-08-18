@@ -424,13 +424,37 @@
   }
 }
 
-/* Content sits above the background layer. Excludes .scan-terminal, which is
-   already `position: fixed` — this rule would otherwise win the cascade
-   (equal specificity, declared later) and downgrade it to `relative`,
-   breaking its viewport-fixed placement. */
-.live-bg ~ *:not(.scan-terminal) {
+/* Content sits above the background layer. The exclusions are elements that
+   set their own `position: fixed` — this rule has equal specificity and is
+   declared later, so without them it wins and silently downgrades them to
+   `relative`, dropping them into page flow. Two bugs came from
+   missing entries here: the consent banner sat at the end of the document
+   looking like a bottom bar, and the site header lost `sticky` and scrolled
+   away with the page instead of staying put. */
+.live-bg ~ *:not(.scan-terminal):not(.consent-banner):not(.site-header) {
   position: relative;
   z-index: 1;
+}
+
+/**
+ * The consent banner is `position: fixed` at the top, so it would otherwise
+ * sit on top of the site header. CookieConsent measures the banner and writes
+ * its height here; both the page and the header's sticky offset move down by
+ * that much for as long as the banner is up, and snap back to 0px the moment
+ * it is dismissed.
+ *
+ * Unlayered on purpose — Tailwind's `top-0` on the header lives in
+ * @layer utilities, and unlayered rules beat layered ones regardless of
+ * specificity.
+ */
+:root {
+  --consent-h: 0px;
+}
+body {
+  padding-top: var(--consent-h);
+}
+.site-header {
+  top: var(--consent-h);
 }
 
 @media (prefers-reduced-motion: reduce) {
