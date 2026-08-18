@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { CookieConsent } from "@/components/cookie-consent";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -77,7 +77,7 @@ export default function RootLayout({
           <SiteFooter />
           <ScanTerminal />
         </ThemeProvider>
-        <GoogleAnalytics gaId={siteConfig.googleAnalyticsId} />
+        <CookieConsent />
       </body>
     </html>
   );

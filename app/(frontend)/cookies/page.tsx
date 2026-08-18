@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/static-page";
+import { ResetConsentButton } from "@/components/cookie-consent";
 import { siteConfig } from "@/site.config";
 
 export const metadata: Metadata = {
@@ -17,8 +18,22 @@ export default function CookiesPage() {
       </p>
 
       <p>
-        Short version: {siteConfig.name} uses Google Analytics to see aggregate traffic
-        patterns. We don&apos;t run advertising cookies or sell data to anyone.
+        Short version: {siteConfig.name} asks before loading Google Analytics, and loads
+        nothing if you say no. We don&apos;t run advertising cookies or sell data to anyone.
+      </p>
+
+      <h2>Your choice</h2>
+      <p>
+        On your first visit a banner asks whether we may load Google Analytics. Until you
+        answer, it is not loaded and no analytics cookies are set. Declining is a real
+        no — the script never runs — and the site behaves identically either way.
+      </p>
+      <p>
+        Your answer is stored in your browser&apos;s local storage, not in a cookie, so it
+        never leaves your device. To change it:
+      </p>
+      <p>
+        <ResetConsentButton />
       </p>
 
       <h2>Theme preference</h2>
@@ -46,12 +61,15 @@ export default function CookiesPage() {
         activity ourselves — Google Analytics only gives us aggregated numbers.
       </p>
       <p>
-        To opt out, use a browser extension like{" "}
+        This only applies if you accepted the banner. If you declined, or have not answered,
+        none of it runs. Should you want belt and braces on top of declining, a browser
+        extension like{" "}
         <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noreferrer">
           Google Analytics Opt-out
-        </a>
-        , or block <code>*.google-analytics.com</code> / <code>*.googletagmanager.com</code>{" "}
-        with your browser&apos;s tracking-protection settings.
+        </a>{" "}
+        or blocking <code>*.google-analytics.com</code> and{" "}
+        <code>*.googletagmanager.com</code> in your browser&apos;s tracking-protection
+        settings will do it.
       </p>
 
       <h2>No advertising cookies</h2>
