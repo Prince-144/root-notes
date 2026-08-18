@@ -371,7 +371,17 @@ function sections(body: string): Section[] {
     // strongest signal that a paragraph carries the actual content.
     const score = (p: string) => {
       const t = clean(p);
-      const digits = (t.match(/\d/g) ?? []).length;
+
+      // Only standalone figures count. Version strings and identifiers like
+      // "x64" are digits that carry no story, and counting them picked
+      // "Tested against Chrome 147.0.7727.102 and Edge 147.0.3912.98, x64
+      // Windows only" over the paragraph explaining what the technique does.
+      const digits = (
+        t
+          .replace(/\b\d+(?:\.\d+)+\b/g, " ")
+          .match(/(?<![\w.])[$€£]?\d[\d,]*%?(?![\w.])/g) ?? []
+      ).length;
+
       const lengthScore = Math.min(t.length, 420) / 100;
 
       // A paragraph opening on a bare demonstrative is answering the paragraph
