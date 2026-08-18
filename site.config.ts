@@ -84,6 +84,28 @@ export const mainNav = [
   ...categories.map((c) => ({ name: c.name, href: `/category/${c.slug}` })),
 ];
 
+/**
+ * Where the site can be followed. Instagram carries the same stories as
+ * carousels; the RSS route is served by this app at app/(frontend)/rss.xml.
+ *
+ * `external` decides target/rel — the feed is same-origin and should open in
+ * place so a reader's browser or extension can pick it up.
+ */
+export const socialLinks = [
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/rootnotes.in/",
+    label: "Root Notes on Instagram",
+    external: true,
+  },
+  {
+    name: "RSS",
+    href: "/rss.xml",
+    label: "Subscribe by RSS",
+    external: false,
+  },
+] as const;
+
 export const footerNav = {
   Sections: categories.map((c) => ({ name: c.name, href: `/category/${c.slug}` })),
   Company: [

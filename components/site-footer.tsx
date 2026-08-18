@@ -1,5 +1,27 @@
 import Link from "next/link";
-import { footerNav, siteConfig } from "@/site.config";
+import { footerNav, siteConfig, socialLinks } from "@/site.config";
+
+/**
+ * Inline SVGs rather than an icon package: two glyphs is not worth a
+ * dependency, and these inherit currentColor so they follow the chip's hover
+ * state and both themes for free.
+ */
+const icons: Record<(typeof socialLinks)[number]["name"], React.ReactNode> = {
+  Instagram: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-3" aria-hidden>
+      <rect x="2" y="2" width="20" height="20" rx="5.5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  RSS: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-3" aria-hidden>
+      <circle cx="5.2" cy="18.8" r="1.7" fill="currentColor" stroke="none" />
+      <path d="M4 11.2a8.8 8.8 0 0 1 8.8 8.8" />
+      <path d="M4 4.2A15.8 15.8 0 0 1 19.8 20" />
+    </svg>
+  ),
+};
 
 export function SiteFooter() {
   return (
@@ -16,6 +38,24 @@ export function SiteFooter() {
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg-subtle">
               {siteConfig.tagline}
             </p>
+
+            <ul className="mt-5 flex flex-wrap items-center gap-2">
+              {socialLinks.map((s) => (
+                <li key={s.name}>
+                  <a
+                    href={s.href}
+                    aria-label={s.label}
+                    {...(s.external
+                      ? { target: "_blank", rel: "me noreferrer noopener" }
+                      : {})}
+                    className="tag-chip gap-1.5 text-fg-subtle transition-colors hover:border-accent hover:text-fg"
+                  >
+                    {icons[s.name]}
+                    {s.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {Object.entries(footerNav).map(([group, links]) => (
