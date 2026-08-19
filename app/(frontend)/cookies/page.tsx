@@ -14,7 +14,7 @@ export default function CookiesPage() {
     <StaticPage promptCmd="cat cookie-policy.md" title="cookie-policy">
       <h1>Cookie Policy</h1>
       <p>
-        <em>Last updated: 18 August 2026</em>
+        <em>Last updated: 19 August 2026</em>
       </p>
 
       <p>
@@ -95,9 +95,9 @@ export default function CookiesPage() {
         actually reads this.
       </p>
       <p>
-        If you would rather neither ran, blocking{" "}
-        <code>*.vercel-scripts.com</code> and disabling JavaScript for this site stops both.
-        The site is readable without either.
+        Both are served from this site&apos;s own domain rather than a third-party one, so
+        a blocklist that works by host will not catch them. Turning JavaScript off for this
+        site stops both, and every article remains readable without it.
       </p>
 
       <h2>No advertising cookies</h2>

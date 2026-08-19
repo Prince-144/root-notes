@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <StaticPage promptCmd="cat privacy-policy.md" title="privacy-policy">
       <h1>Privacy Policy</h1>
       <p>
-        <em>Last updated: 18 August 2026</em>
+        <em>Last updated: 19 August 2026</em>
       </p>
 
       <p>
@@ -24,11 +24,16 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <p>
         If you subscribe to the newsletter, we store the email address you provide and a
-        confirmation timestamp. Separately, Google Analytics collects aggregate,
-        non-identifying traffic data for every visitor (page views, referrers, approximate
-        location, device type) — see our{" "}
-        <a href="/cookies">Cookie Policy</a> for detail and how to opt out. We don&apos;t run
-        ad tracking or any other visitor-tracking script beyond that.
+        confirmation timestamp.
+      </p>
+      <p>
+        Separately, three things count traffic, and they do not see the same people. Google
+        Analytics collects aggregate, non-identifying data (page views, referrers,
+        approximate location, device type) but only from visitors who accepted the banner.
+        Vercel Web Analytics and our own article view counter run for everyone, set no
+        cookie and store no identifier that outlives the visit. Our{" "}
+        <a href="/cookies">Cookie Policy</a> sets out what each records and how to stop
+        them. We don&apos;t run ad tracking or any other visitor-tracking script.
       </p>
 
       <h2>How we use it</h2>
@@ -49,12 +54,13 @@ export default function PrivacyPage() {
           stored.
         </li>
         <li>
-          <strong>Vercel</strong> — hosts the site and processes standard server request logs
-          (IP address, user agent) for operational purposes.
+          <strong>Vercel</strong> — hosts the site, processes standard server request logs
+          (IP address, user agent) for operational purposes, and runs Vercel Web Analytics,
+          which records page views without cookies or a stored identifier.
         </li>
         <li>
-          <strong>Google Analytics</strong> — collects aggregate traffic data for every
-          visitor, per Google&apos;s own privacy policy.
+          <strong>Google Analytics</strong> — collects aggregate traffic data, per
+          Google&apos;s own privacy policy, and only from visitors who accepted the banner.
         </li>
       </ul>
 
