@@ -14,10 +14,10 @@ const { docs } = await payload.find({
 });
 
 const status = new Map<string, string>();
-for (const d of docs as Array<Record<string, string>>) status.set(d.slug, d.status);
+for (const d of docs) status.set(d.slug, d.status);
 
 let bad = 0;
-for (const d of docs as Array<Record<string, string>>) {
+for (const d of docs) {
   const targets = [...d.body.matchAll(/\]\(\/article\/([a-z0-9-]+)\)/g)].map((m) => m[1]);
   for (const t of new Set(targets)) {
     if (!status.has(t)) { bad += 1; console.log(`MISSING  ${d.slug} -> ${t}`); }

@@ -94,8 +94,8 @@ export function CookieConsent() {
               <span className="font-mono text-xs text-accent">$ cookies --analytics</span>
               <br />
               We would like to use Google Analytics to see which articles get read. It sets
-              cookies. Nothing else on this site tracks you, and declining changes nothing
-              about what you can read.{" "}
+              cookies. Declining changes nothing about what you can read — we still count
+              page views without cookies, and that counts nobody in particular.{" "}
               <a href="/cookies" className="text-accent hover:opacity-70">
                 Cookie Policy
               </a>

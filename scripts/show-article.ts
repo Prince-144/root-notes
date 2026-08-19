@@ -10,11 +10,11 @@ const { docs } = await payload.find({
   limit: 1,
   depth: 0,
 });
-const d = docs[0] as Record<string, string> | undefined;
+const d = docs[0];
 if (!d) { console.log("not found"); process.exit(1); }
 console.log("TITLE:", d.title);
 console.log("EXCERPT:", d.excerpt);
-console.log("COVER:", d.coverImage);
+console.log("COVER:", d.coverImageUrl);
 console.log("---BODY---");
 console.log(d.body);
 process.exit(0);

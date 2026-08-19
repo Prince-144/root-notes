@@ -22,7 +22,7 @@ const { docs } = await payload.find({
 });
 
 let failed = 0;
-for (const d of docs as Array<Record<string, string>>) {
+for (const d of docs) {
   if (only.length > 0 && !only.includes(d.slug)) continue;
   try {
     await compile(d.body, { remarkPlugins: [remarkGfm] });

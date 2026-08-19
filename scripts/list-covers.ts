@@ -8,7 +8,7 @@ const { docs } = await payload.find({
 });
 
 const ids = new Set<string>();
-for (const d of docs as Array<Record<string, string | null>>) {
+for (const d of docs) {
   const m = (d.coverImageUrl ?? "").match(/photo-[\w-]+/);
   if (m) ids.add(m[0]);
 }

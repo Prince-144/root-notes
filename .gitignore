@@ -20,3 +20,6 @@ tsconfig.tsbuildinfo
 
 # Generated Instagram assets — regenerate from the article, do not commit.
 /instagram
+
+# Service-account keys and anything else that must never be committed.
+/.secrets

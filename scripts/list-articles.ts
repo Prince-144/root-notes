@@ -14,11 +14,10 @@ const { docs, totalDocs } = await payload.find({
   limit: 500,
   depth: 0,
   sort: "-publishedAt",
-  select: { slug: true, status: true, title: true, coverImage: true, publishedAt: true },
+  select: { slug: true, status: true, title: true, publishedAt: true },
 });
 
-for (const d of docs as Array<Record<string, string>>) {
-  const cover = (d.coverImage ?? "").replace(/^https?:\/\/[^/]+\//, "").slice(0, 48);
+for (const d of docs) {
   console.log([d.status.padEnd(9), (d.publishedAt ?? "").slice(0, 10), d.slug].join("  "));
 }
 console.log(`\ntotal ${totalDocs}`);

@@ -19,7 +19,8 @@ export default function CookiesPage() {
 
       <p>
         Short version: {siteConfig.name} asks before loading Google Analytics, and loads
-        nothing if you say no. We don&apos;t run advertising cookies or sell data to anyone.
+        nothing if you say no. Two counters run either way, neither of which uses cookies
+        or identifies you. We don&apos;t run advertising cookies or sell data to anyone.
       </p>
 
       <h2>Your choice</h2>
@@ -70,6 +71,33 @@ export default function CookiesPage() {
         or blocking <code>*.google-analytics.com</code> and{" "}
         <code>*.googletagmanager.com</code> in your browser&apos;s tracking-protection
         settings will do it.
+      </p>
+
+      <h2>Counting without cookies</h2>
+      <p>
+        Two things count page views whether or not you accept the banner, because neither
+        sets a cookie, stores an identifier that survives your visit, or follows you to any
+        other site. There is nothing about you in either of them to consent to.
+      </p>
+      <p>
+        The first is our own view counter. When you open an article, your browser tells our
+        server that this article was opened — nothing else. It is what the &ldquo;views&rdquo;
+        number on the site comes from.
+      </p>
+      <p>
+        The second is{" "}
+        <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noreferrer">
+          Vercel Web Analytics
+        </a>
+        , run by the company that hosts this site. It records the page, the referring site
+        and a country-level location, and it exists because Google Analytics only ever sees
+        readers who pressed Accept, which makes those numbers an unreliable picture of who
+        actually reads this.
+      </p>
+      <p>
+        If you would rather neither ran, blocking{" "}
+        <code>*.vercel-scripts.com</code> and disabling JavaScript for this site stops both.
+        The site is readable without either.
       </p>
 
       <h2>No advertising cookies</h2>

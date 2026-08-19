@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { CookieConsent } from "@/components/cookie-consent";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -78,6 +79,14 @@ export default function RootLayout({
           <ScanTerminal />
         </ThemeProvider>
         <CookieConsent />
+
+        {/* Vercel Web Analytics. Unconditional, unlike GA4 in CookieConsent:
+            it sets no cookies, stores no identifier across visits and does not
+            follow anyone between sites, so there is nothing for a reader to
+            consent to. It is what the numbers are actually read from — GA only
+            ever sees the readers who pressed Accept. Both are disclosed on
+            /cookies. */}
+        <Analytics />
       </body>
     </html>
   );
