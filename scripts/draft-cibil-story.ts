@@ -77,11 +77,7 @@ It is also the ancestor of the argument India is having right now. CICRA regulat
 
 ## 2007 and 2011: the four-year gap
 
-The **CIBIL Score** was introduced in **2007** as a generic risk model — for banks and financial institutions.
-
-Individual consumers could first obtain their own score in **2011**.
-
-So for **4 years** there existed a number, derived from your own behaviour, that determined whether you were lent money and on what terms, and you had no way to see it. Not a secret exactly. Just not addressed to you.
+The **CIBIL Score** was introduced in **2007** as a generic risk model, for banks and financial institutions. Individual consumers could first obtain their own score in **2011**. For **4 years** there existed a number, derived from your own behaviour, that decided whether you were lent money and on what terms — and you had no way to see it. Not a secret exactly. Just not addressed to you.
 
 ## 2016: it stops costing money to look
 
@@ -111,7 +107,7 @@ What is not in dispute is the direction of the largest factor. Paying on time, e
 
 **Checking your own score does not lower it.**
 
-When you look at your own record it is recorded as a **soft enquiry** and has no effect on the score. What counts against you is a **hard enquiry** — a lender pulling your file because you applied for credit — and several of those in a short window suggest someone shopping desperately for a loan.
+When you look at your own record it is logged as a **soft enquiry** and has no effect on the score at all. What counts against you is a **hard enquiry** — a lender pulling your file because you applied for credit — and several of those inside a short window read as somebody shopping desperately for a loan. You are entitled to **1** free full report every calendar year, and reading it costs your score nothing.
 
 The practical consequence is the opposite of what the myth implies. Because errors happen and disputes take time, the incentive is to check *more* often, not less.
 
