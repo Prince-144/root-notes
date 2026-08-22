@@ -30,77 +30,75 @@ const P = "?w=1600&h=900&fit=crop&crop=entropy&q=80";
 
 const DRAFTS: Draft[] = [
   {
-    slug: "entra-id-cve-2026-69836-cvss-10-no-action-for-users-to-take",
+    slug: "entra-id-cve-2026-69836-advisory-said-exploited-then-it-did-not",
     title:
-      "A CVSS 10 in Entra ID was exploited and fixed without you — and there is nothing on your side to check",
+      "Microsoft's advisory said the CVSS 10 was exploited — by evening it said it was not, and the headlines had already gone",
     excerpt:
-      "CVE-2026-69836 is a deserialization flaw in Microsoft Entra ID allowing unauthenticated remote code execution. Microsoft says it has been exploited in the wild and is already fully mitigated service-side, with no action for customers. That last sentence is the uncomfortable one: you cannot patch it, and you cannot audit whether your tenant was touched.",
+      "CVE-2026-69836 is a real maximum-severity flaw in Entra ID, and Microsoft fixed it cloud-side with nothing for customers to do. For most of 21 August its own bulletin marked it exploited in the wild. Microsoft corrected that field to No after a reporter asked. The correction has not travelled the way the original did.",
     categorySlug: "security",
     tags: [
       "microsoft",
       "entra-id",
       "identity",
       "cloud",
-      "remote-code-execution",
       "vulnerabilities",
+      "disclosure",
     ],
     readingMinutes: 8,
     coverImageUrl: `https://images.unsplash.com/photo-1585914641050-fa9883c4e21c${P}`,
-    body: `On **21 August 2026** Microsoft disclosed **CVE-2026-69836**, a **CVSS 10.0** flaw in **Entra ID** — the cloud identity service formerly called Azure Active Directory, and the thing that decides who is allowed into most corporate Microsoft estates.
+    body: `On **21 August 2026** Microsoft disclosed **CVE-2026-69836**, a **CVSS 10.0** flaw in **Entra ID** — the cloud identity service formerly called Azure Active Directory, and the thing that decides who gets into most corporate Microsoft estates.
 
-It is a **deserialization of untrusted data** issue allowing an unauthorised attacker to execute code over a network. Microsoft says it has been **exploited in the wild**. It was reported by **Robert Fitzpatrick**, a principal security engineer.
+It is a **deserialization of untrusted data** issue allowing an unauthorised attacker to execute code over a network. It was reported by **Robert Fitzpatrick**, a principal security engineer. Microsoft fixed it on its own infrastructure: no update package, no KB, no configuration change, and in Microsoft's words no action for users of the service to take.
 
-Microsoft also says the issue is fully mitigated service-side, and that there is no action for users of the service to take.
+All of that is still true. One thing about it is not.
 
-## Read that last sentence again
+## The field that changed
 
-"No action for users to take" is written as reassurance. It is also a complete description of your position, and the position is: you were not involved.
+Microsoft's bulletin originally marked the **Exploited** entry in its exploitability assessment table as **Yes**.
 
-You did not patch this, because there was nothing on your side to patch. You cannot verify the fix, because you cannot see the service. You cannot check whether your own tenant was among those touched during the exploitation window, because you do not have logs of the layer where it happened. And you were told after it was over.
+On the same day, after **The Hacker News** contacted the company for comment, Microsoft corrected that field to **No**. The vulnerability was not exploited in the wild.
 
-None of that is Microsoft behaving badly. It is the normal, correct operation of a managed cloud service, and it is the trade every customer accepted when identity moved off their own hardware. It is just worth naming plainly, because it is the opposite of how most organisations describe their security posture to auditors.
+Between those two states, the first version went everywhere. BleepingComputer, The Register, Help Net Security and a long tail of aggregators all carried it as a maximum-severity identity flaw under active attack — accurately, because that is what the vendor's own advisory said at the time they wrote.
 
-## Why a 10.0 here is different from a 10.0 elsewhere
+We were about to publish it that way too. This piece exists because we checked the source again before we did.
 
-CVSS 10 means unauthenticated, remote, and total. Those appear a few times a year.
+## Why one table cell moved the whole industry
 
-What makes this one specific is where it sits. Entra ID is not an application. It is the thing applications trust. Every Microsoft 365 sign-in, every Conditional Access decision, every token issued to every SaaS product wired into it — all of that rests on the identity layer being sound.
+Because **Exploited: Yes** is not a description. It is an instruction.
 
-We have written repeatedly about attacks that work by going around the login rather than through it: [ADFS signing keys extracted to forge assertions](/article/adfs-signing-keys-machine-dpapi-golden-saml-ghost-certificate), [passkey attack paths in Entra](/article/passkey-attacks-2026-synced-keys-entra-windows-hello), and [an OAuth grant with no interactive prompt to attach MFA to](/article/password-spraying-155x-huntress-ropc-azure-cli-mfa-gaps). A flaw in the identity provider itself is the same category with the intermediate steps removed.
+It is the field that decides whether something is a Tuesday ticket or a Friday night. It drives KEV listings, emergency change approvals, out-of-hours pages, and the sentence a security lead uses to interrupt a board meeting. Nobody re-derives it; everybody forwards it. That is what makes the machinery efficient and it is what makes a single wrong cell expensive.
 
-## What Microsoft has not said
+And corrections do not inherit the original's velocity. The first version had a headline, a severity and urgency behind it. The correction is a line appended to articles most people have already read, in a story that has stopped being new.
 
-The advisory is thin, and the gaps are the story:
+## What this does not change
 
-- **When exploitation started**, and for how long it ran
-- **Who was exploiting it**, or with what objective
-- **How many tenants were affected**, or whether any were
-- **Whether affected customers will be notified individually**
-- **What, if anything, an attacker achieved** with code execution in that environment
+The vulnerability was real and its severity was real. **CVSS 10.0** means unauthenticated, remote and total, and the location matters more than the number: Entra ID is not an application, it is the thing applications trust. Every Microsoft 365 sign-in, every Conditional Access decision, every token issued to a SaaS product wired into it depends on that layer holding.
 
-Publishing after mitigation is standard for a cloud provider — you do not describe a live hole in your own service. But it means the exploitation window is a period customers cannot examine, and the only account of what happened inside it is the provider's.
+We have written repeatedly about attacks that work by going around the login rather than through it — [ADFS signing keys extracted to forge assertions](/article/adfs-signing-keys-machine-dpapi-golden-saml-ghost-certificate), [passkey attack paths in Entra](/article/passkey-attacks-2026-synced-keys-entra-windows-hello), [an OAuth grant with no interactive prompt to attach MFA to](/article/password-spraying-155x-huntress-ropc-azure-cli-mfa-gaps). A flaw in the identity provider itself is that category with the intermediate steps deleted. It being unexploited is luck, not architecture.
 
-## What you can actually do
+## The part that should still bother you
 
-Not patch. The useful actions are all downstream, on the assumption that identity assurance was briefly not guaranteed.
+Strip out the exploitation question and look at the position customers were in.
 
-- **Review sign-in and audit logs for the last few weeks** for anything anomalous — unusual token issuance, new service principals, consent grants you do not recognise, role assignments nobody remembers making.
-- **Enumerate your service principals and app registrations.** Persistence in a Microsoft tenant usually looks like a legitimate application with more permission than it needs, not a login.
-- **Check for new or modified federation and credential objects.** Added certificates and secrets on an existing app are the quiet version of a backdoor.
-- **Ask Microsoft, in writing, whether your tenant was affected.** You may not get an answer. Asking creates a record that you asked.
-- **Do not treat this as closed because the CVE is closed.** The vulnerability is fixed. Anything an attacker established during the window is not.
+You did not patch this, because there was nothing on your side to patch. You cannot verify the fix, because you cannot see the service. You could not evaluate the exploitation claim, because you have no logs from the layer where it would have happened. You were told after it was over, and then told something different.
 
-## The part worth arguing about
+None of that is Microsoft behaving badly. It is the ordinary, correct operation of a managed cloud service, and it is the deal every customer accepted when identity moved off their own hardware. It is worth naming plainly because it is the opposite of how most organisations describe their security posture to an auditor — and because for one day, the only account available of what had happened was wrong, and there was no second source to check it against.
 
-There is a reasonable position that cloud providers should disclose more, later being better than never but not by much, and a reasonable position that publishing details of an identity-layer flaw before every tenant is protected would be worse for everyone.
+## What is actually worth doing
 
-Both are defensible. What is not defensible is the version many organisations tell themselves — that moving identity to a managed service removed this risk rather than transferring it somewhere they cannot see. It transferred it. That is the deal, and it is mostly a good deal, and today is the day it is visible.
+Nothing urgent. But the exercise is free and the answers are useful whenever you next need them:
+
+- **Know where you would look.** If Microsoft had said your tenant was affected, which log would you open? Most organisations discover the answer is none.
+- **Enumerate service principals and app registrations.** Persistence in a Microsoft tenant looks like a legitimate application with more permission than it needs, not a login.
+- **Check for credentials added to existing applications.** A new certificate or secret on an app nobody has touched in a year is the quiet version of a backdoor.
+- **Decide now how you treat a vendor advisory that changes.** This one changed within a day. The next one may change after you have already spent a weekend on it.
 
 ## What is not established
 
-- **Everything about the exploitation.** Timing, actor, scale and impact are all unpublished.
-- **Whether any customer data was reached.** Not stated either way.
-- **Whether other identity providers share the pattern.** Deserialization flaws are not Microsoft-specific and nobody has published equivalent findings elsewhere.`,
+- **Why the field was set to Yes.** Microsoft has not explained whether it was an error in the assessment or in publication.
+- **Whether any exploitation attempt occurred at all**, as distinct from successful exploitation.
+- **How many organisations acted on the original version**, or what that cost them.
+- **Whether the correction reached everyone who read the original.** On the evidence of the headlines still standing, no.`,
   },
   {
     slug: "gitlab-cve-2026-19478-exploited-forged-merge-records-watchtowr",
