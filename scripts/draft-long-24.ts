@@ -128,9 +128,7 @@ It is attributed with high confidence to the **MoYu Group**, which operates the 
 
 Nobody exploited anything. The malware arrives through the update channel.
 
-The **TWCore** system app — **com.tw.core** — has a legitimate software update mechanism that pulls APK files using an **MQTT** message broker at **cardoor[.]cn**. A dropper Kaspersky calls **JarService** rides that channel.
-
-This is the update path the head unit is built to trust. There is no user prompt to ignore, no sideloading to warn about, no permission dialog. The device asked for software, and software arrived, through the mechanism its manufacturer built.
+The **TWCore** system app — **com.tw.core** — has a legitimate update mechanism that pulls APK files through an **MQTT** message broker at **cardoor[.]cn**, and a dropper Kaspersky calls **JarService** rides it. This is the path the head unit is built to trust: no user prompt to ignore, no sideloading to warn about, no permission dialog. Researchers counted **7** variants going back to version **3.57**, so it has been carrying payloads for a while.
 
 That makes it the same shape as [the Rust crate poisoned at compile time](/article/arrayref-rust-crates-io-sapphire-sleet-86-minutes) and [the Firefox extensions repurposed under their original IDs](/article/offside-wallet-theft-factory-40-firefox-extensions-socket): the attacker does not defeat the trust decision, they inherit one already made.
 
@@ -138,7 +136,7 @@ That makes it the same shape as [the Rust crate poisoned at compile time](/artic
 
 Kaspersky reports **9** commands supporting unwanted advertising, ad fraud, and downloading further malicious modules. It also collects device information — display resolution, model, Wi-Fi identifiers and MAC addresses.
 
-It checks for configuration updates every **90 minutes** by HTTP POST to its command servers. Researchers identified **7** variants by version number, going back to version **3.57**, which is the detail that says this is not new — a version numbered 3.57 has a history behind it.
+It checks for configuration updates every **90 minutes** by HTTP POST to its command servers, which is frequent enough to retask the fleet within a working day and quiet enough that nobody looking at a data bill would notice it.
 
 ## Why a car head unit is a good target
 
