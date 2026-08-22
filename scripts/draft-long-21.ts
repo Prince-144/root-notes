@@ -261,11 +261,9 @@ The documented version has better details in it anyway.
 
 ## The opening scene is invented
 
-The film begins with Zuckerberg being dumped by Erica Albright, and builds its whole thesis on that: he made the thing out of wounded pride, to get at women who would not have him.
+The film, released in **2010** about events from **2003**, begins with Zuckerberg being dumped by Erica Albright and builds its whole thesis on it: he made the thing out of wounded pride, to get at women who would not have him. **Erica Albright is a fictional character, written for the film.** There is no real person behind her. You do not have to take a founder at his word about his motives — but you do have to notice that the popular explanation rests on somebody who was made up.
 
-**Erica Albright is a fictional character, written for the film.** There is no real person behind her.
-
-Zuckerberg's own account is that he built the site out of boredom, and that the goal of the bigger version was to let people around the university connect. You do not have to take a founder at his word about his motives. You do have to notice that the popular explanation rests on a character who was made up.
+Zuckerberg's own account is that he built the site out of boredom, and that the goal of the bigger version was to let people around the university connect.
 
 ## Facemash was real, and worse than the myth
 
@@ -279,11 +277,9 @@ That is the actual origin story, and it is not flattering. It also has nothing t
 
 **Cameron** and **Tyler Winklevoss**, with **Divya Narendra**, said Zuckerberg had agreed to build their site, **ConnectU**, and built Facebook instead.
 
-After a single day of negotiation the parties signed a **handwritten** settlement: the plaintiffs gave up ConnectU in exchange for **$20 million** in cash and **$45 million** in Facebook stock, the shares valued at **$19** each at the time. That is where the widely quoted **$65 million** comes from.
+After a single day of negotiation the parties signed a **handwritten** settlement: the plaintiffs gave up ConnectU for **$20 million** in cash and **$45 million** in Facebook stock, the shares valued at **$19** each. Then they went to court to undo it, arguing the stock had been misvalued — and by the **2012** IPO that stock was reported at close to **$500 million**. They spent years trying to escape the half of the deal that made them rich. The cash was the small half.
 
-Then they tried to undo it, arguing the stock had been misvalued. The Ninth Circuit refused. They dropped the case in **June 2011**.
-
-By Facebook's **2012** IPO that stock was worth a large multiple of its settlement value — reported at close to **$500 million**. The twins spent years in court trying to escape the most valuable part of the deal they had signed. The cash was the small half.
+The Ninth Circuit refused to reopen it. They dropped the case in **June 2011**.
 
 Divya Narendra is the third name in that case, and the one almost nobody can recall, which tells you something about how these stories get compressed.
 
