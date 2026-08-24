@@ -314,10 +314,20 @@ ${FOOTER}
 </svg>`;
 }
 
+/**
+ * Strips markdown for slide rendering.
+ *
+ * Underscores are deliberately left alone. They were in the strip list as an
+ * italic marker, which also destroyed every filename and identifier that
+ * contains one — a slide about a BYOVD attack rendered Dell's DBUtil_2_3.sys
+ * as DBUtil23.sys, which is simply the wrong filename. The house style uses
+ * **bold** and *asterisk italics*, never _underscore italics_, so nothing is
+ * lost by keeping them.
+ */
 function clean(text: string): string {
   return text
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[*_`]/g, "")
+    .replace(/[*`]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }

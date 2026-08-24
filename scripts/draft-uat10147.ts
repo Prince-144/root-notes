@@ -85,10 +85,10 @@ This is the line to take away.
 | AjaxPro | CVE-2021-23758 | 2021 |
 | Telerik UI for ASP.NET AJAX | CVE-2019-18935 | 2019 |
 | Alibaba Nacos | CVE-2021-29441 / 29442 | 2021 |
+| Linux privesc | CVE-2022-0847, CVE-2022-0995, CVE-2021-3156 | 2021-22 |
+| Linux privesc | CVE-2015-5287, CVE-2015-3246, CVE-2010-3904 | 2010-15 |
 
-The Linux privilege escalation set is older still — **CVE-2022-0847**, **CVE-2022-0995**, **CVE-2021-3156**, **CVE-2015-5287**, **CVE-2015-3246**, and **CVE-2010-3904**, which is **16 years** old.
-
-Not one zero-day. The AI is doing reconnaissance, targeting, scripting and obfuscation at a scale no team could staff — and then every actual intrusion walks through a door that has had a lock available for years.
+Not one zero-day. The Linux privilege escalation set runs back to **CVE-2010-3904**, which is **16 years** old. The AI is doing reconnaissance, targeting, scripting and obfuscation at a scale no team could staff — and then every actual intrusion walks through a door that has had a lock available for years.
 
 That matches what we found in [the five-agency advisory on Siemens PLCs](/article/siemens-s7-plc-ai-written-snap7-tooling-five-agency-advisory) and in [the $99.99 C2 framework with a natural-language front end](/article/redc2-4-npm-packages-llm-red-agent-99-dollars). In all three, AI removes the requirement for expertise or headcount. In none of them does it produce a new way in.
 
