@@ -14,8 +14,12 @@
  * of Dragos has publicly warned against it. The cover is a generic, unnamed
  * power station for the same reason the article does not name one — nobody has.
  *
- * Cover note: all three images downloaded and viewed. A code-screen candidate
- * was rejected because "Laravel" was legible on a story about Spring.
+ * Cover note: all three images downloaded and viewed. Two code-screen
+ * candidates were rejected for the Spring piece — one had "Laravel" legible
+ * on it, and the one first shipped turned out to carry an "Activate Windows"
+ * watermark that only became obvious once rendered onto a slide. Viewing the
+ * source image is not enough; check the composited output too. The abstract
+ * replacement cannot carry legible text at all.
  *
  * Pass --update to rewrite existing drafts; published articles are skipped.
  */
@@ -164,9 +168,9 @@ That is the same curve we traced through [TikTok's COPPA settlement, where a $5.
 
 ## Why this one is different from the others
 
-Because it is not about data moving somewhere it should not, or a market being tilted. It is about an algorithm making a decision that ended someone's income, with nobody obliged to look at it.
+The **€825 million** is not about data crossing a border it should not, or a market being tilted. It is about an algorithm ending someone's income with nobody obliged to look at it — the first of these fines that reads as direct precedent for the AI systems now going into hiring, lending, insurance and moderation.
 
-That is the first of these fines that reads as a direct precedent for AI systems now being deployed into hiring, lending, insurance and moderation. None of the reasoning depends on the software being sophisticated. It depends on there being a consequential decision, no human, and no notice.
+None of that reasoning depends on the software being sophisticated. It depends on there being a consequential decision, no human, and no notice.
 
 India's [DPDP obligations arrive in November 2026](/article/india-dpdp-enforcement-timeline-november-2026) without an equivalent automated-decision right in the same form, which makes the European position the one to watch if you build for both markets.
 
@@ -193,7 +197,7 @@ India's [DPDP obligations arrive in November 2026](/article/india-dpdp-enforceme
       "broadcom",
     ],
     readingMinutes: 8,
-    coverImageUrl: `https://images.unsplash.com/photo-1607743386760-88ac62b89b8a${P}`,
+    coverImageUrl: `https://images.unsplash.com/photo-1750969185331-e03829f72c7d${P}`,
     body: `**Broadcom** has released fixes for **91** vulnerabilities across the **Spring** application framework — Spring Security, Spring AI, Cloud Config, Data REST, Integration, Reactor Core, Reactor Netty, AMQP and Batch — affecting more than **200,000** software components.
 
 One is critical. **CVE-2026-59270** is in Spring Security's embedded **UnboundID LDAP** server and could let an attacker authenticate and modify entries in the in-memory directory. More than a dozen are rated high.
