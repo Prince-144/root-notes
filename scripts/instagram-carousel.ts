@@ -12,7 +12,7 @@
  * under each, so the carousel follows the piece rather than being written
  * twice and drifting from it.
  */
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -515,10 +515,20 @@ async function writeCover(path: string): Promise<void> {
     return;
   }
 
-  const url = src.startsWith("http") ? src : `${siteConfig.url}${src}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`cover image ${res.status} for ${url}`);
-  const photo = Buffer.from(await res.arrayBuffer());
+  // A site-relative cover lives in public/ and is read from disk, not fetched
+  // from the live site. Fetching it meant a cover could only be rendered after
+  // it had been deployed — and since stale PNGs are cleared before the render,
+  // a not-yet-deployed cover wiped the existing slides and then failed.
+  let photo: Buffer;
+  if (src.startsWith("http")) {
+    const res = await fetch(src);
+    if (!res.ok) throw new Error(`cover image ${res.status} for ${src}`);
+    photo = Buffer.from(await res.arrayBuffer());
+  } else {
+    const local = `public${src}`;
+    if (!existsSync(local)) throw new Error(`cover image not found on disk: ${local}`);
+    photo = readFileSync(local);
+  }
 
   await sharp(photo)
     .resize(W, H, { fit: "cover", position: "centre" })

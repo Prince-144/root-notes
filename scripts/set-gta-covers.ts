@@ -7,7 +7,7 @@
  *
  * Three distinct images, because no cover is used twice on this site:
  *   leak piece     -> the box-art collage
- *   subpoena piece -> the two characters
+ *   subpoena piece -> a character holding up a phone
  *   fake ISO piece -> the logo on black
  *
  * The logo started on the subpoena piece and moved. As an article cover it is
@@ -36,7 +36,7 @@ const APPLY = process.argv.includes("--apply");
 
 const COVERS: Record<string, string> = {
   "gta-vi-cyberleek-leak-working-build-protest-demand": "/covers/gta-vi-key-art.jpg",
-  "take-two-dmca-subpoena-onedrive-discord-device-ids": "/covers/gta-vi-characters.jpg",
+  "take-two-dmca-subpoena-onedrive-discord-device-ids": "/covers/gta-vi-phone.jpg",
   "gta-vi-fake-iso-113gb-zeroes-defender-whitelist": "/covers/gta-vi-logo.jpg",
 };
 
