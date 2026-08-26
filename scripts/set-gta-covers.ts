@@ -7,8 +7,14 @@
  *
  * Three distinct images, because no cover is used twice on this site:
  *   leak piece     -> the box-art collage
- *   subpoena piece -> the logo on black
- *   fake ISO piece -> the two characters
+ *   subpoena piece -> the two characters
+ *   fake ISO piece -> the logo on black
+ *
+ * The logo started on the subpoena piece and moved. As an article cover it is
+ * fine, but the carousel renders the headline over the middle of the image,
+ * which is exactly where the logo lettering sits — a six-line headline landed
+ * on top of it and both turned to mush. It sits better under the fake ISO
+ * piece, whose headline is short enough to clear it.
  *
  * All three were downloaded from rockstargames.com, cropped to 16:9 and are
  * hosted locally under public/covers/ rather than hotlinked. They are the only
@@ -30,8 +36,8 @@ const APPLY = process.argv.includes("--apply");
 
 const COVERS: Record<string, string> = {
   "gta-vi-cyberleek-leak-working-build-protest-demand": "/covers/gta-vi-key-art.jpg",
-  "take-two-dmca-subpoena-onedrive-discord-device-ids": "/covers/gta-vi-logo.jpg",
-  "gta-vi-fake-iso-113gb-zeroes-defender-whitelist": "/covers/gta-vi-characters.jpg",
+  "take-two-dmca-subpoena-onedrive-discord-device-ids": "/covers/gta-vi-characters.jpg",
+  "gta-vi-fake-iso-113gb-zeroes-defender-whitelist": "/covers/gta-vi-logo.jpg",
 };
 
 const payload = await getPayload({ config });
