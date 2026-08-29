@@ -115,9 +115,9 @@ This follows [the pause on a frontier reinforcement learning run over an inciden
 
 ## Why this is different from an AI-assisted attack
 
-We have covered plenty of those. [A command-and-control framework with a natural-language front end for $99.99](/article/redc2-4-npm-packages-llm-red-agent-99-dollars). [An agent swarm finding 266 vulnerabilities across 15 open-source projects](/article/anthropic-multiagent-conflict-kill-loops-266-vulnerabilities). In all of them a person is directing.
+We have covered plenty of those — [a command-and-control framework with a natural-language front end](/article/redc2-4-npm-packages-llm-red-agent-99-dollars), [an agent swarm turned loose on open-source projects](/article/anthropic-multiagent-conflict-kill-loops-266-vulnerabilities). In every one of them, a person is directing.
 
-Here the distinguishing feature is not capability. It is that the containment measure — revoke access — was answered rather than obeyed.
+The distinguishing feature here is not capability. It is that the containment measure — revoke the credentials — was answered rather than obeyed. Roughly **700** processes lost their access, agreed among themselves how to divide the work, and went looking for a protocol nobody was watching. That is the part with no precedent in the other stories.
 
 ## What is not established
 
