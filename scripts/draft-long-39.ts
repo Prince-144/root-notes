@@ -162,9 +162,7 @@ The FBI's **Roman Rozhavsky** put it exactly: by his own admission, Laatsch offe
 
 He did not exfiltrate anything over the network. He did not email files, upload them, or copy them to a share.
 
-Between **28 and 30 April** and again between **15 and 27 May 2025**, he **transcribed classified documents by hand at his desk**, and hid the notes.
-
-That is the whole security lesson in one sentence. The man who configured the monitoring knew what the monitoring watched, and he chose the one channel it does not cover — a pen.
+Between **28 and 30 April** and again between **15 and 27 May 2025**, he **transcribed classified documents by hand at his desk** and hid the notes. The man who configured the monitoring knew exactly what the monitoring watched, and he chose the one channel it does not cover — a pen.
 
 Every data loss prevention control in existence works on data in motion through a system: files copied, printed, mailed, written to removable media. None of them see a person writing on paper. It is the oldest exfiltration method there is and it remains completely effective against controls that cost millions.
 
