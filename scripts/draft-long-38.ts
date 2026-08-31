@@ -140,7 +140,7 @@ The largest, a right-click-unlocking utility, has around **80,000** users.
 
 **14** of the extensions were created by the operators. The other **5** were **purchased from their previous owners**.
 
-That is a business model, and it is the efficient one. Building an extension and growing it to tens of thousands of users takes years of work that has nothing to do with crime. Buying one that already has them takes an email and a payment, and every existing user comes with it — along with the permissions they granted, the reviews they trusted and the install base that makes the listing look safe.
+Buying is the efficient half of the model. Building an extension and growing it to **80,000** users takes years of work that has nothing to do with crime, and buying one that already has them takes an email and a payment. Every existing user comes with it — along with the permissions they granted, the reviews they trusted, and the install base that makes the listing look safe to the next person.
 
 There is no mechanism in any extension store that tells a user their extension changed hands.
 
