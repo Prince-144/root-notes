@@ -399,8 +399,13 @@ function sections(body: string): Section[] {
       // sounds" reads as a fragment on a slide, because the bound it refers to
       // is not there. Penalised rather than excluded: if a section has nothing
       // else, a fragment still beats no slide.
+      //
+      // "here" earns its place for the same reason. A paragraph opening
+      // "Here it is a sentence typed to an assistant" is pointing at the
+      // example in the paragraph above it, and on a slide there is nothing
+      // for it to point at.
       const backReference =
-        /^(that|this|these|those|it|they|such|both|neither|and|but|so|because|which|then|also|again|instead)\b/i.test(
+        /^(that|this|these|those|it|they|such|both|neither|and|but|so|because|which|then|also|again|instead|here)\b/i.test(
           t,
         );
 

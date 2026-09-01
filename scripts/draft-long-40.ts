@@ -75,15 +75,15 @@ Aurora used **Cursor**, an AI coding assistant, to plan attacks **in Russian** �
 
 Read that as an operational document. Avoiding targets in the Commonwealth of Independent States is the oldest rule in Russian-speaking cybercrime, because prosecution follows victims at home and does not follow victims abroad. It has historically been implemented in code: a keyboard-layout check, a locale check, a hardcoded list of country codes that makes the ransomware exit quietly.
 
-Here it is a sentence typed to an assistant. The rule did not change. Its **medium** did — from a compiled check that a reverse engineer can find in the binary to an instruction in a chat log that nobody outside ever sees.
+The rule did not change; its **medium** did — from a compiled check a reverse engineer can find in the binary, to a sentence typed to an assistant in a chat log nobody outside ever sees. For **10 years** the CIS check has been one of ransomware analysis's most reliable classification signals, and it is now moving out of the artefact.
 
-That is a quiet loss for defenders. The CIS check has been one of the most reliable attribution and classification signals in ransomware analysis for a decade, and it is now moving out of the artefact.
+That is a quiet loss for defenders, and not one that shows up in a detection rule.
 
 ## What they had it do
 
-The agent was tasked with **network scanning**, **domain enumeration**, **NTLM relay** attempts, certificate attacks, and planning **Active Directory Certificate Services** exploitation.
+The agent was tasked with **network scanning**, **domain enumeration**, **NTLM relay** attempts, certificate attacks and planning **Active Directory Certificate Services** exploitation. None of that is novel tradecraft. What the assistant changes is the floor: an affiliate who could not previously chain those steps together now can, because the planning has been delegated.
 
-None of that is novel tradecraft — AD CS abuse is well documented, and [CISA's red team used the same class of misconfiguration against a government organisation this month](/article/cisa-tale-of-two-socs-aa26-237a-red-team). What the assistant changes is the floor: an affiliate who could not previously chain those steps together now can, because the planning has been delegated.
+AD CS abuse is well documented — [CISA's red team used the same class of misconfiguration against a government organisation this month](/article/cisa-tale-of-two-socs-aa26-237a-red-team).
 
 The pattern matches [the command-and-control framework with a natural-language front end that sells for $99.99](/article/redc2-4-npm-packages-llm-red-agent-99-dollars). The capability is not new. The number of people who can operate it is.
 
@@ -91,13 +91,11 @@ The pattern matches [the command-and-control framework with a natural-language f
 
 ## A correction you are going to need
 
-Widely-syndicated coverage of this story describes Cursor as **SpaceX's** AI-powered coding assistant.
+Widely-syndicated coverage of this story describes Cursor as **SpaceX's** AI-powered coding assistant. It is not: **Cursor is made by Anysphere**, the company named throughout Cursor's own terms of service. SpaceX appears on cursor.com as a **customer**, on the logo wall, which is almost certainly where the error came from.
 
-It is not. **Cursor is made by Anysphere** — the company named throughout Cursor's own terms of service. SpaceX appears on cursor.com as a **customer**, on the logo wall, which is almost certainly where the error came from.
+A separate summary of the same article offered a third answer, Anthropic, which is also wrong. Two independent descriptions of one fact, both incorrect, on a detail anyone can verify in thirty seconds.
 
-We checked before writing, because that sentence is about to be copied into a lot of articles, and a ransomware story that misattributes the tool to a rocket company is the kind of error that outlives the reporting. A separate summary of the same article offered a third answer — Anthropic — which is also wrong.
-
-Two independent descriptions of one fact, both incorrect, on a detail anyone can verify in thirty seconds.
+We checked before writing, because that sentence is about to be copied into a lot of articles, and a ransomware story that misattributes the tool to a rocket company is the kind of error that outlives the reporting.
 
 ## What to do
 
