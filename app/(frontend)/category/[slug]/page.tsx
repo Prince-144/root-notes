@@ -5,6 +5,7 @@ import { ArticleRow } from "@/components/article-card";
 import { BackButton } from "@/components/back-button";
 import { getByCategory } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
+import { jsonLd } from "@/lib/json-ld";
 
 export function generateStaticParams() {
   return categories.map((category) => ({ slug: category.slug }));
@@ -61,7 +62,7 @@ export default async function CategoryPage({
     <div className="container-page py-10 sm:py-14">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbLd) }}
       />
       <div className="mb-4">
         <BackButton />

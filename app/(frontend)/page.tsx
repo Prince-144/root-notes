@@ -4,6 +4,7 @@ import { ArticleRow, TrendingRow } from "@/components/article-card";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { formatDate, getArticles, getFeatured, getTrending } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
+import { jsonLd } from "@/lib/json-ld";
 
 export default async function HomePage() {
   const featured = await getFeatured();
@@ -68,7 +69,7 @@ export default async function HomePage() {
     <div className="container-page py-10 sm:py-14">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(siteLd) }}
       />
 
       {/* ---------- HERO: live terminal feed ---------- */}

@@ -13,6 +13,7 @@ import { formatDate, getArticles, getBySlug, getRelated, tagToSlug } from "@/lib
 import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
+import { jsonLd } from "@/lib/json-ld";
 
 export async function generateStaticParams() {
   const articles = await getArticles();
@@ -111,11 +112,11 @@ export default async function ArticlePage({
     <div className="container-page py-10 sm:py-14">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(newsArticleLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(newsArticleLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbLd) }}
       />
       <ViewTracker slug={article.slug} />
       <div className="mb-4">

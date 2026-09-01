@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cronAuthorised } from "@/lib/cron-auth";
 import { generateAndSaveDraft } from "@/lib/article-generator";
 
 // Research + drafting runs well past the default limit; this is the ceiling
@@ -6,8 +7,7 @@ import { generateAndSaveDraft } from "@/lib/article-generator";
 export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!cronAuthorised(req.headers.get("authorization"))) {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 

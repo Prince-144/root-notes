@@ -12,6 +12,17 @@ function resendClient(): Resend | null {
 
 const RESEND_COOLDOWN_MS = 60_000;
 
+/**
+ * One reply for every outcome — already subscribed, newly created, or held
+ * back by the cooldown.
+ *
+ * Returning "You're already subscribed." for a known address and something
+ * else for an unknown one turned this endpoint into a subscriber checker:
+ * post an address, read the message, learn whether that person reads Root
+ * Notes. Nobody has to be told which branch they hit, so nobody is.
+ */
+const NEUTRAL_REPLY = { ok: true, message: "Check your inbox to confirm." } as const;
+
 export async function subscribe(email: string): Promise<{ ok: boolean; message: string }> {
   const payload = await getPayload({ config });
 
@@ -25,13 +36,13 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
   if (existing.docs.length > 0) {
     const doc = existing.docs[0];
     if (doc.confirmed) {
-      return { ok: true, message: "You're already subscribed." };
+      return { ...NEUTRAL_REPLY };
     }
     // Without this, repeatedly POSTing someone else's email address would
     // email-bomb them with confirmation emails on every request.
     const msSinceLastSend = Date.now() - Date.parse(doc.updatedAt);
     if (msSinceLastSend < RESEND_COOLDOWN_MS) {
-      return { ok: true, message: "Check your inbox to confirm." };
+      return { ...NEUTRAL_REPLY };
     }
     token = doc.confirmToken;
     // Touch the doc so updatedAt resets the cooldown window for next time.
@@ -71,7 +82,7 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
     );
   }
 
-  return { ok: true, message: "Check your inbox to confirm." };
+  return { ...NEUTRAL_REPLY };
 }
 
 export async function confirmSubscription(token: string): Promise<boolean> {

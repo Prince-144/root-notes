@@ -13,6 +13,26 @@ import { Users } from "./collections/Users";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+/**
+ * Reads a required secret, or refuses to build/boot.
+ *
+ * PAYLOAD_SECRET and DATABASE_URI used to fall back to "". An empty
+ * PAYLOAD_SECRET is the dangerous one: Payload signs admin session JWTs with
+ * it, so a deployment missing the variable would happily mint and accept
+ * cookies signed with a key an attacker already knows — and it would look
+ * completely healthy while doing it. A build that stops is a much better
+ * outcome than a site that silently has no admin authentication.
+ */
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `${name} is not set. Refusing to start — see .env.example for the variables this app requires.`,
+    );
+  }
+  return value;
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -34,13 +54,13 @@ export default buildConfig({
       token: process.env.BLOB_READ_WRITE_TOKEN ?? "",
     }),
   ],
-  secret: process.env.PAYLOAD_SECRET ?? "",
+  secret: requiredEnv("PAYLOAD_SECRET"),
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI ?? "",
+      connectionString: requiredEnv("DATABASE_URI"),
     },
     // Schema is applied via `payload migrate`, not auto-pushed on every dev
     // reload — push mode was re-diffing the whole schema against Neon on
