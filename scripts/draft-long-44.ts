@@ -43,7 +43,7 @@ Sality has no central server to seize. Infected machines find each other, and th
 
 The malware **trusted any peer that spoke its protocol**, without verifying who was on the other end. So the investigators became peers.
 
-The technique is **peer list manipulation**. Every **40 minutes**, an infected machine checks the status of the peers it knows about. Investigators used that cycle to strip legitimate peers out at the protocol level and substitute entries pointing at sinkholes they controlled. **Super peers** — the well-connected nodes that hold the network together — went first. Machines sitting passively behind firewalls were picked off afterwards, during their own maintenance cycles.
+The technique is **peer list manipulation**. Every **40 minutes**, an infected machine checks the status of the peers it knows about. Investigators used that cycle to strip legitimate peers out at the protocol level and substitute entries pointing at sinkholes they controlled. **Super peers** — the nodes that hold the network together — went first. Machines behind firewalls were picked off afterwards, on their own cycles.
 
 Two Sality networks, **version 3** and **version 4**, were live until the disruption. More than **15,000** infected machines were reachable for payload delivery.
 
@@ -67,7 +67,7 @@ What actually changed is that the operator lost the ability to push new payloads
 
 This is the part that will not get written up.
 
-Before Sunday, 15,000 machines were infected and their owners mostly did not know. After Sunday, 15,000 machines are infected, their owners still mostly do not know, and the party with an interest in fixing them has been removed from the equation.
+Before Sunday, 15,000 machines were infected and their owners mostly did not know. After Sunday, 15,000 machines are infected, their owners still mostly do not know, and the only party who was actively paying attention to them — the operator — no longer is. Nothing about the machines changed. The list of people responsible for them did.
 
 Sinkhole data gets passed to national CERTs and ISPs, who notify downstream. That process works, slowly, and it works best for organisations that have someone to receive a notification. A small business running an infected workstation from 2019 does not.
 
