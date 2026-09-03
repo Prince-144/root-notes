@@ -42,7 +42,7 @@ function score(p: string): { total: number; parts: string } {
     /^(that|this|these|those|it|they|such|both|neither|and|but|so|because|which|then|also|again|instead|here)\b/i.test(
       t,
     );
-  const overflows = t.length > 460;
+  const overflows = t.length > 420;
   const total =
     (digits > 0 ? 3 : 0) + lengthScore - (backReference ? 5 : 0) - (overflows ? 4 : 0);
   const parts = [

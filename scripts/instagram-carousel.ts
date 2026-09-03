@@ -409,11 +409,18 @@ function sections(body: string): Section[] {
           t,
         );
 
+      // 460 was too generous. A 455-character paragraph on the KEV batch piece
+      // still lost its last two words — "Both ran, failed, and" with
+      // "continued." dropped — because the estimate assumed ~43 characters a
+      // line and that paragraph was full of long words (authentication,
+      // authenticating, reconstructed) that strand line-ends. 420 is both the
+      // measured safe width and the point where lengthScore stops rewarding
+      // length, so past it a paragraph is taking risk for no score.
       // pointSlide draws at most 11 body lines and drops the rest, which cuts
       // mid-clause with nothing to signal it. Roughly 43 characters fit a line
       // at the body size, so anything past ~460 will be silently truncated —
       // penalise it rather than print half a sentence.
-      const overflows = t.length > 460;
+      const overflows = t.length > 420;
 
       return (digits > 0 ? 3 : 0) + lengthScore - (backReference ? 5 : 0) - (overflows ? 4 : 0);
     };
