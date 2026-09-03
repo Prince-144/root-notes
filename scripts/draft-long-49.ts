@@ -183,9 +183,9 @@ The **NodeRabbit** archive — "Front-Technical-Challenge.zip", containing a pro
 
 Read those as attacker instructions rather than exam rules.
 
-**"The backend is bug-free"** is scoping. It tells a candidate under time pressure not to read the one directory where the malicious code lives, and it does not sound like misdirection — it sounds like a considerate examiner narrowing the task.
+**"The backend is bug-free"** is scoping. It tells a candidate on a **3**-hour clock not to read the one directory where the malicious code lives, and it sounds like a considerate examiner narrowing the task rather than misdirection. **"Without AI assistance"** is the anti-analysis control: it forbids the action most likely to catch this — pasting unfamiliar code into an assistant — and reads as an ordinary hiring rule.
 
-**"Without AI assistance"** is the anti-analysis control. The single most likely action that would catch this is a developer pasting unfamiliar code into an assistant and asking what it does. The instruction forbids exactly that, and it is completely plausible as a hiring rule, because plenty of real technical assessments say the same thing.
+Plenty of real technical assessments say both of those things, which is exactly why neither raises an eyebrow.
 
 We wrote last week about [a Russian group planting a nuclear-weapon prompt in a script to derail AI analysis](/article/uac-0099-guardbreaker-nuclear-prompt-vbs-comment) — a technical attempt to stop a model reading malware, with no evidence it works. This is the social version of the same goal, and it does not need to defeat a model at all. It just asks the human not to open one.
 
@@ -193,9 +193,7 @@ The **PollCat** variant uses a different pressure: a CTF-style React platform an
 
 ## The dependency never touches a registry
 
-The NodeRabbit archive ships a trojanised npm package — **colorized_terminal 2.1.0** — **inside node_modules**, rather than declaring it so npm fetches it.
-
-That detail matters more than it looks. Registry-side defences, package reputation, install-time scanning, lockfile review: none of them engage, because there is no install. The code is already on disk when the candidate unzips the archive, and importing it launches the payload as a background process.
+The NodeRabbit archive ships a trojanised npm package — **colorized_terminal 2.1.0** — **inside node_modules**, rather than declaring it so npm fetches it. Registry-side defences, package reputation, install-time scanning and lockfile review never engage, because there is no install: the code is already on disk when the candidate unzips the archive, and importing it launches the payload as a background process.
 
 Supply-chain thinking that stops at "audit your dependencies" does not cover a dependency that was handed to you pre-installed.
 

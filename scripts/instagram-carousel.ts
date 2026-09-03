@@ -492,7 +492,16 @@ const picked = sections(article.body)
     // Version strings are digits that carry no story. "Every release from 1.58
     // onward, across branches 0.58 through 0.63" scored as a figures paragraph
     // and produced a slide with two lines of build numbers on it.
-    const hasFigure = /\d/.test(s.text.replace(/\b\d+(?:\.\d+)+\b/g, ""));
+    //
+    // The same standalone-digit test the paragraph scorer uses, for the same
+    // reason. A bare digit match counted the 2 in "C2" as a statistic, which
+    // handed a slide to a section whose winning paragraph was an attribution
+    // caveat and pushed out one that had something to say. "x64", "SHA1" and
+    // "IPv6" are the same trap.
+    const hasFigure =
+      (s.text
+        .replace(/\b\d+(?:\.\d+)+\b/g, " ")
+        .match(/(?<![\w.])[$€£]?\d[\d,]*%?(?![\w.])/g) ?? []).length > 0;
     const tooShort = s.text.length < 140;
     return {
       s,
