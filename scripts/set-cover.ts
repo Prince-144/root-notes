@@ -17,6 +17,7 @@
  * as a mistake in a feed, and check-covers exists to catch exactly that — no
  * point introducing the problem it was written to find.
  */
+import { existsSync } from "node:fs";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
@@ -29,9 +30,15 @@ if (!slug || !image) {
   process.exit(1);
 }
 
+// Three kinds of value are accepted: a full URL, a site-relative path for a
+// file in public/ (how the GTA covers were done, and why that needed its own
+// script), and a bare Unsplash id.
+const siteRelative = image.startsWith("/");
 const url = image.startsWith("http")
   ? image
-  : `https://images.unsplash.com/${image}${CROP}`;
+  : siteRelative
+    ? image
+    : `https://images.unsplash.com/${image}${CROP}`;
 
 const payload = await getPayload({ config });
 
@@ -69,12 +76,25 @@ console.log(`  to:   ${url}`);
 
 // A cover that 404s renders as a broken image on the live article, which is
 // worse than the cover it replaced. Check before writing, not after.
-const res = await fetch(url, { method: "GET" });
-if (!res.ok) {
-  console.error(`\ncover URL returned ${res.status} — not writing`);
-  process.exit(1);
+//
+// A site-relative cover cannot be fetched — it does not exist at a URL until
+// the next deploy — so the check is that the file is on disk under public/.
+// Getting this wrong ships a broken image that only shows up after deploying.
+if (siteRelative) {
+  const onDisk = `public${url}`;
+  if (!existsSync(onDisk)) {
+    console.error(`${onDisk} does not exist — not writing`);
+    process.exit(1);
+  }
+  console.log(`  file:  ${onDisk} present (live after the next deploy)`);
+} else {
+  const res = await fetch(url, { method: "GET" });
+  if (!res.ok) {
+    console.error(`\ncover URL returned ${res.status} — not writing`);
+    process.exit(1);
+  }
+  console.log(`  fetch: ${res.status} ${res.headers.get("content-type")}`);
 }
-console.log(`  fetch: ${res.status} ${res.headers.get("content-type")}`);
 
 if (!APPLY) {
   console.log("\ndry run — re-run with --apply to write");
