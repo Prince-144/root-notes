@@ -388,8 +388,8 @@ function sections(body: string): Section[] {
       // Windows only" over the paragraph explaining what the technique does.
       const digits = (
         t
-          .replace(/\b\d+(?:\.\d+)+\b/g, " ")
-          .match(/(?<![\w.])[$€£]?\d[\d,]*%?(?![\w.])/g) ?? []
+          .replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ")
+          .match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []
       ).length;
 
       const lengthScore = Math.min(t.length, 420) / 100;
@@ -500,8 +500,8 @@ const picked = sections(article.body)
     // "IPv6" are the same trap.
     const hasFigure =
       (s.text
-        .replace(/\b\d+(?:\.\d+)+\b/g, " ")
-        .match(/(?<![\w.])[$€£]?\d[\d,]*%?(?![\w.])/g) ?? []).length > 0;
+        .replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ")
+        .match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []).length > 0;
     const tooShort = s.text.length < 140;
     return {
       s,

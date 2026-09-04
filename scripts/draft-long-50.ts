@@ -116,17 +116,13 @@ BraZetsu profiles a compromised host across hardware, installed software, networ
 - **Banking keywords appearing in active application window titles**
 - Screen captures
 
-Read that as an intake form rather than a theft. ERP directory present? This is a business, not a home PC. Banking keywords in the window title? Somebody here moves money. Certificates? Things can be signed. Browser history? Here is what this person has access to.
-
-Each field maps to a price, and the framework exists to fill them in.
+Read that as an intake form rather than a theft. ERP directory present? This is a business, not a home PC. Banking keywords in the window title? Somebody here moves money. Certificates? Things can be signed. History from **5** browsers? Here is what this person has access to. Each field maps to a price, and the framework exists to fill them in.
 
 ## The price is $5.80
 
-The profile feeds the **Infected Marketplace**, also called **Banco de Infects**, at **infect[.]online** — an access-as-a-service operation. Initial access to a compromised host costs around **$5.80**.
+The profile feeds the **Infected Marketplace**, also called **Banco de Infects**, at **infect[.]online**, and initial access to a compromised host costs around **$5.80**. It is not a ransom and it is not a wire transfer — it is the wholesale cost of standing inside a company, and every downstream incident that begins "initial access was obtained by an unknown means" has a price like that at the front of it.
 
-Buyers can execute further payloads on what they have bought, which Group-IB describes as a **threat-multiplier effect**: one compromise, resold, becomes whatever the buyer already had planned.
-
-Five dollars eighty is the number to sit with. It is not a ransom, it is not a wire transfer — it is the wholesale cost of standing inside a company. Every downstream incident that starts "initial access was obtained by an unknown means" has a price like this at the front of it, and [renting compromised routers as residential proxies runs on the same economics](/article/evooo1bot-mirai-routers-socks5-residential-proxy).
+Buyers can execute further payloads on what they have bought, which Group-IB describes as a **threat-multiplier effect**: one compromise, resold, becomes whatever the buyer already had planned. [Renting compromised routers as residential proxies runs on the same economics](/article/evooo1bot-mirai-routers-socks5-residential-proxy).
 
 ## Where the AI actually is
 
@@ -134,7 +130,7 @@ This will be reported as AI-powered malware. That framing is wrong in a specific
 
 Group-IB describes generative AI used for malware development, and then for **backend data triage and target prioritisation** — automatically evaluating a compromised machine's **commercial potential**.
 
-So the model is not in the payload. It is in the **back office**, doing inventory management: reading profiles, sorting them, deciding what is worth listing and at what price. That is a far more mundane use of the technology and a far more durable one, because it scales the part of the business that used to need a person reading each victim.
+The model is not in the payload. It is in the **back office**, doing inventory management: reading profiles, sorting them, and deciding what is worth listing at **$5.80** and what is not. A far more mundane use of the technology, and a far more durable one, because it scales the part of the business that used to need a person reading each victim one at a time.
 
 We wrote this week that [three labs shipped cyber models and graded their own homework](/article/three-labs-shipped-cyber-models-and-graded-their-own-homework). This is the other end of the same market: no frontier capability required, just enough automation to price stock.
 
