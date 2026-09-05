@@ -61,15 +61,15 @@ Read that twice. It is not "helps a researcher". It is autonomy against defended
 - Multiple flaws in a **hardened operating system**, chained into local privilege escalation from an unprivileged user **to root**.
 - It declines **91.5%** of cyber-related jailbreak attempts, against **59%** for its predecessor GPT-5.6 Sol.
 
-Taken at face value that is a serious capability, and the defensive reading is real: a model that turns advisories into working exploits is also a model that finds your bugs before somebody else does.
+Taken at face value that is a serious capability: **100%** on a benchmark of turning advisories into working exploits, plus **2** vulnerabilities nobody had reported. The defensive reading is real — a model that does that to disclosed flaws is a model that finds yours first. The offensive reading is the same sentence.
 
 ## Every step of that is OpenAI's
 
 Here is the structure, stated without accusation, because the structure is the story.
 
-OpenAI **wrote** the Preparedness Framework. OpenAI **defined** the Critical threshold. OpenAI **ran** the evaluations. OpenAI **judged** that the threshold was met. OpenAI **decided** the safeguards "sufficiently minimize the risk of severe harm for release". And OpenAI **operates the list** of who gets the capability.
+OpenAI wrote the Preparedness Framework, defined the Critical threshold, ran the evaluations, judged the threshold met, cleared the safeguards for release, and operates the allowlist that gates access. That is **6** decisions and every one belongs to the company shipping the model. No external body signed any of it off, and none is quoted.
 
-No external body signed any of that off, and none is quoted. [We made the same observation about all three labs last week](/article/three-labs-shipped-cyber-models-and-graded-their-own-homework) — this is the sharpest instance of it, because the judgment being self-made is not a benchmark score but a safety determination about a capability the company itself classifies as Critical.
+[We made the same observation about all three labs last week](/article/three-labs-shipped-cyber-models-and-graded-their-own-homework) — this is the sharpest instance of it, because what is being self-judged is not a benchmark score but a safety determination about a capability the company itself classifies as Critical.
 
 Give credit where it is due: OpenAI published the framework in advance, published the finding, gated the release, and said the uncomfortable thing out loud. A company that wanted to avoid this conversation had easier options. But "we set the bar, we measured ourselves against it, and we cleared ourselves" is the accurate description, and it is worth saying while the announcement is being repeated.
 
@@ -99,11 +99,9 @@ The first pair will be quoted everywhere. The second pair is the one that tells 
 
 ## What the evidence looks like on the ground
 
-Set the launch claims beside the one public, independent, costed experiment this site has covered.
+Set against "anything a human can do with a computer": Forescout had **Claude** [port a working pre-auth exploit between two industrial controllers](/article/claude-ported-plc-exploit-8-hours-536-dollars-forescout). It took **8 hours 32 minutes** and **$535.74**, needed constant human steering, and bricked the device. The lab concluded its own researcher would have been faster and cheaper alone.
 
-Last week Forescout published an attempt to have a frontier model [port a working pre-auth exploit from one industrial controller to another](/article/claude-ported-plc-exploit-8-hours-536-dollars-forescout). It took **8 hours 32 minutes** and **$535.74**, needed sustained human steering, and bricked the device. The lab's own conclusion was that the researcher would have been faster and cheaper alone.
-
-That is a different model from a different vendor, and it is a year of capability behind. It is also the only number in this discussion produced by someone with nothing to sell, and the honest position is that the gap between it and "can do anything a human can do with a computer" has not been independently measured by anybody.
+That is a different model from a different vendor and a year of capability behind, and it is still the only number in this discussion produced by someone with nothing to sell. Nobody has independently measured the distance between it and what was claimed on Thursday.
 
 ## What to do
 
