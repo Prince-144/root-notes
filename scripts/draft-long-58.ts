@@ -118,24 +118,43 @@ Without that, nobody outside the company can assess how far the consumer surface
   },
   {
     slug: "n-central-cve-2026-86218-unauthenticated-rce-in-the-box-that-manages-the-boxes",
-    title: "An unauthenticated RCE in the box that manages everyone else's boxes",
+    title: "N-able's release notes say it is not exploited. N-able's incident notice says it is",
     excerpt:
-      "N-able shipped an emergency hotfix on Saturday for CVE-2026-86218, a maximum-severity unauthenticated remote code execution flaw in on-premises N-central. It is not the flaw patched in Hotfix 3. Roughly 1,500 N-central servers are internet-exposed, and in the one confirmed customer compromise the logs had already rotated.",
+      "CVE-2026-86218 is a CVSS 10.0 pre-authentication RCE in N-central, patched on Saturday in the fourth hotfix in five weeks and one day after the third. Two of N-able's own documents disagree about whether it is being exploited in the wild, and the company has not said which is current.",
     categorySlug: "security",
     tags: ["n-able", "n-central", "cve-2026-86218", "rmm", "msp", "unauthenticated-rce"],
     readingMinutes: 8,
     coverImageUrl: `https://images.unsplash.com/photo-1680992046615-065f58bcb4d8${P}`,
-    body: `On **Saturday 6 September 2026**, N-able released **N-central 2026.3 Hotfix 4** as an emergency patch for **CVE-2026-86218**: a **maximum severity** unauthenticated remote code execution flaw, exploitable through what is described as a low-complexity attack against on-premises deployments.
+    body: `On **Saturday 6 September 2026**, N-able released **N-central 2026.3.1.14** as an emergency patch for **CVE-2026-86218**: a **CVSS 10.0** pre-authentication remote code execution flaw in on-premises deployments.
 
-Vendors do not ship on a Saturday unless someone is worried.
+It was the fourth hotfix in five weeks, and it landed **one day** after the third.
 
-## It is not the one you patched last time
+## Five weeks, four hotfixes
 
-This matters more than the CVE number. CVE-2026-86218 is **distinct from CVE-2026-86206 and CVE-2026-86207**, the high-severity authentication bypass flaws fixed in **Hotfix 3**.
+| Date | Build | Fixed |
+|---|---|---|
+| 2 August | 2026.3.1.7 | CVE-2026-18577 — an incomplete fix for an authentication bypass, exploited in the wild |
+| 6 August | 2026.3.1.10 | additional hardening on the same attack path |
+| 5 September | 2026.3.1.13 | CVE-2026-86206 and CVE-2026-86207 — API access control and authentication bypass |
+| 6 September | 2026.3.1.14 | CVE-2026-86218 — pre-authentication RCE, **10.0** |
 
-If you applied Hotfix 3 and closed the ticket, you are exposed to a maximum-severity unauthenticated RCE. Two rounds, two different bugs, and the second is worse than the first.
+The chain begins with an **incomplete fix**. It ends, a day after the previous emergency patch, with a perfect-score pre-auth RCE.
 
-[We have been here before with this product](/article/storm-1175-stormencryptor-n-central-patch-bypass), and the pattern is now familiar enough to plan around: on N-central, treat any patch as an increment rather than a conclusion.
+If you patched on 5 September and closed the ticket, you are not patched. [We have been here before with this product](/article/storm-1175-stormencryptor-n-central-patch-bypass); on N-central, treat any hotfix as an increment rather than a conclusion.
+
+## The two statements
+
+Here is the part that should not be smoothed over, because it is not the usual vendor-versus-researcher disagreement.
+
+**N-able's release notes and status post** say there are "no confirmations that this vulnerability has been exploited in production environments".
+
+**N-able's incident notice** says the flaw "has been observed being exploited in the wild".
+
+Those are the same company, about the same CVE, at the same time. N-able has not said which statement is current or published evidence for either, and the difference is not academic: one of them means patch on your normal emergency schedule, and the other means assume compromise.
+
+Meanwhile **Huntress** — which investigated a customer compromise on **4 September** — says it cannot determine from its own data whether CVE-2026-86218 was the vulnerability used.
+
+So the honest state of knowledge is: the vendor's own documents disagree, the firm that looked at an actual intrusion cannot tell, and the flaw scores 10.0. Anyone telling you confidently which way it goes is filling in a blank.
 
 ## Why 1,500 is the wrong number to look at
 
@@ -143,46 +162,32 @@ The Shadowserver Foundation tracks roughly **1,500 internet-exposed N-central se
 
 Fifteen hundred sounds small. It is the wrong unit.
 
-N-central is **remote monitoring and management** software. It is what a managed service provider uses to reach into every one of its customers' estates — to deploy agents, run scripts, push software and take remote sessions. One N-central server is not one organisation. It is one MSP and everybody that MSP manages, which is typically dozens to hundreds of businesses that have never heard the product's name.
+N-central is **remote monitoring and management** software — what a managed service provider uses to reach into every one of its customers' estates, to deploy agents, run scripts, push software and take remote sessions. One N-central server is not one organisation. It is one MSP and everybody that MSP manages, typically dozens to hundreds of businesses that have never heard the product's name.
 
-An unauthenticated RCE on that box does not get an attacker onto a server. It gets them the tool that was built to run code on everyone else's machines, with the credentials and the agent estate already in place. That is why this class of software keeps being targeted and why "only 1,500" is not reassurance.
+A pre-auth RCE there does not get an attacker onto a server. It gets them the tool built to run code on everyone else's machines, with the credentials and the agent estate already in place.
 
-## The vendor and the hunters disagree, and both can be right
+## The intrusion nobody can attribute
 
-N-able's position:
+N-able has described an intrusion beginning **31 July** in which "a limited number of customers were affected". No count has been published.
 
-> At this time, we have no confirmations that this vulnerability has been exploited in production environments, but unpatched systems remain at risk.
-
-Huntress has flagged it as a **potential zero-day**.
-
-Those look contradictory and are not. A vendor states what it can confirm from evidence it holds; a threat-hunting company reports what its telemetry suggests across customer estates it monitors. "No confirmations" is a statement about proof, not about the absence of exploitation, and N-able's sentence is carefully constructed to say exactly that.
-
-Treat the honest reading as: nobody has proven exploitation, somebody credible thinks it happened, and the patch is out.
-
-## The logs had rotated
-
-Here is the detail that should stay with you.
-
-There is one confirmed compromised customer environment. Nobody can determine whether CVE-2026-86218 was the vector there, or whether it was one of the earlier authentication bypass flaws — **because the logs had already rotated**.
-
-That is the whole incident-response problem in one clause. The window in which the answer existed closed before anyone went looking, on the box whose entire purpose is administering other people's infrastructure, in an environment that already knew it had been compromised.
-
-Log retention is boring until the day it is the only thing that would have told you which door was used, and by then the decision was made months ago by whoever accepted the default.
+And in the compromise Huntress examined, the vector could not be established. That is the whole incident-response problem in one clause: with four candidate flaws patched in five weeks, working out which door was used requires evidence that nobody had retained.
 
 ## What to do
 
-- **Confirm you are on 2026.3 Hotfix 4.** Not Hotfix 3. Check the running version rather than the change ticket.
-- **If you are an MSP customer, ask your provider today** which hotfix their N-central is on and when it was applied. You are downstream of a box you do not control.
-- **Take the N-central web interface off the public internet.** Roughly 1,500 organisations have not, and there is no configuration of this product that requires it.
-- **Extend log retention on management infrastructure before you need it.** Ninety days on an RMM server is not a luxury.
-- **Assume agent-side actions are in scope.** If this server was reachable and unpatched, the question is not just what happened on it but what it told the agents to do.
+- **Confirm the running build is 2026.3.1.14.** Not "we patched last week". Check the version, not the change ticket.
+- **Given the contradiction, act on the worse statement.** If your N-central was internet-facing and unpatched at any point since 31 July, hunt rather than assume. It costs less than being wrong.
+- **If you are an MSP customer, ask your provider today** which build their N-central is on and when it was applied. You are downstream of a box you do not control.
+- **Take the N-central web interface off the public internet.** Roughly 1,500 organisations have not, and no configuration of this product requires it.
+- **Extend log retention on management infrastructure before you need it.** The reason nobody can attribute the September compromise is a retention setting somebody accepted by default.
+- **Assume agent-side actions are in scope.** The question is not only what happened on the server, but what it told the agents to do.
 
 ## What is not established
 
-- **Whether CVE-2026-86218 has been exploited.** N-able says it cannot confirm it; Huntress suspects it.
-- **What the vector was in the one confirmed compromise.** The logs are gone.
-- **How many of the exposed servers are unpatched**, as opposed to merely visible.
-- **Whether Hotfix 4 is the end of it.** Hotfix 3 was not.`,
+- **Whether CVE-2026-86218 has been exploited.** N-able's own two documents say opposite things.
+- **What the vector was** in the 4 September compromise. Huntress says its data cannot answer it.
+- **How many customers were affected** by the 31 July intrusion. "A limited number" is the only figure given.
+- **How many of the 1,500 exposed servers are unpatched**, as opposed to merely visible.
+- **Whether 2026.3.1.14 is the end of it.** Three of the previous four were not.`,
   },
   {
     slug: "invisible-unicode-beat-keyword-filters-defender-still-caught-99-percent",
