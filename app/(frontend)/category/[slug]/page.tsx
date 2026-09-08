@@ -6,6 +6,8 @@ import { BackButton } from "@/components/back-button";
 import { getByCategory } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
+import { paginate } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
 
 export function generateStaticParams() {
   return categories.map((category) => ({ slug: category.slug }));
@@ -43,6 +45,9 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const articles = await getByCategory(category.slug);
+  // One page, not the whole category — /category/security was 905 KB of HTML
+  // for 160-odd rows nobody scrolls to.
+  const { items, totalPages, total } = paginate(articles, 1);
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -79,16 +84,23 @@ export default async function CategoryPage({
           {category.description}
         </p>
         <div className="mt-6 font-mono text-xs text-fg-subtle">
-          {articles.length} {articles.length === 1 ? "article" : "articles"}
+          {total} {total === 1 ? "article" : "articles"}
         </div>
       </TerminalWindow>
 
-      {articles.length > 0 ? (
-        <div className="mt-12">
-          {articles.map((article) => (
-            <ArticleRow key={article.slug} article={article} showCategory={false} />
-          ))}
-        </div>
+      {items.length > 0 ? (
+        <>
+          <div className="mt-12">
+            {items.map((article) => (
+              <ArticleRow key={article.slug} article={article} showCategory={false} />
+            ))}
+          </div>
+          <Pagination
+            basePath={`/category/${category.slug}`}
+            page={1}
+            totalPages={totalPages}
+          />
+        </>
       ) : (
         <p className="mt-12 font-mono text-sm text-fg-subtle">
           No articles here yet — check back soon.

@@ -5,6 +5,8 @@ import { NewsletterBox } from "@/components/newsletter-box";
 import { formatDate, getArticles, getFeatured, getTrending } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
+import { paginate } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
 
 export default async function HomePage() {
   const featured = await getFeatured();
@@ -13,10 +15,12 @@ export default async function HomePage() {
   // ticker, not a card — dropping the newest story out of "Latest analysis"
   // to avoid repeating a headline left the feed starting at the second-newest.
   //
-  // Every published article, not a slice — the feed scrolls inside a fixed
-  // box, so the count no longer decides how far down the page Coverage and
-  // the newsletter end up.
-  const latest = allArticles;
+  // One page of the feed, not the whole archive. The scroll box already keeps
+  // the page a constant height, but it did nothing about weight: 241 rows and
+  // 241 next/image tags came to 1.5 MB of HTML, almost all of it below a
+  // reader's scroll and growing by nine articles a day. A page still fills the
+  // box several times over, and the rest is a link away.
+  const { items: latest, totalPages } = paginate(allArticles, 1);
   const trending = await getTrending(5);
 
   // Counted from the list already in hand rather than a query per category.
@@ -146,8 +150,10 @@ export default async function HomePage() {
             ))}
           </div>
 
-          {/* Not "view all" any more — everything is already in the feed
-              above. This is the way to filter it. */}
+          <Pagination basePath="/" page={1} totalPages={totalPages} />
+
+          {/* The feed is paged now, so this is the way to reach a specific
+              piece rather than walking back through the archive. */}
           <Link
             href="/search"
             className="mt-6 inline-block font-mono text-sm text-accent transition-opacity hover:opacity-70"

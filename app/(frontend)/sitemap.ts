@@ -1,6 +1,28 @@
 import type { MetadataRoute } from "next";
-import { getAllTags, getArticles } from "@/lib/articles";
+import { getAllTags, getArticles, getByCategory } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
+import { PAGE_SIZE } from "@/lib/pagination";
+
+/**
+ * Pages 2..n of a listing. Page one is listed separately under its own URL,
+ * so this deliberately starts at two rather than emitting a duplicate.
+ *
+ * Listing pages are worth submitting because they are how a crawler reaches
+ * older articles now that the feed is paged — without them, anything past the
+ * first two dozen is only discoverable through the article sitemap entries.
+ */
+function pageEntries(
+  basePath: string,
+  count: number,
+  priority: number,
+): MetadataRoute.Sitemap {
+  const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
+    url: `${siteConfig.url}${basePath}/page/${i + 2}`,
+    changeFrequency: "weekly" as const,
+    priority,
+  }));
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articles = await getArticles();
@@ -18,6 +40,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "daily",
     priority: 0.6,
   }));
+
+  const categoryPageEntries: MetadataRoute.Sitemap = (
+    await Promise.all(
+      categories.map(async (category) =>
+        pageEntries(
+          `/category/${category.slug}`,
+          (await getByCategory(category.slug)).length,
+          0.4,
+        ),
+      ),
+    )
+  ).flat();
+
+  const homePageEntries = pageEntries("", articles.length, 0.5);
 
   // Only tags carrying at least three articles.
   //
@@ -39,7 +75,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: siteConfig.url, changeFrequency: "daily", priority: 1 },
+    ...homePageEntries,
     ...categoryEntries,
+    ...categoryPageEntries,
     ...tagEntries,
     ...articleEntries,
   ];
