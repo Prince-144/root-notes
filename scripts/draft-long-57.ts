@@ -191,9 +191,9 @@ The second is a supply-chain warning inside a breach notice. **Treat your output
   },
   {
     slug: "cert-polska-two-flaws-chained-against-mikrotik-nobody-will-say-which-two",
-    title: "Two flaws are being chained against MikroTik routers. Nobody will say which two",
+    title: "The MikroTik chain has names now, and the first flaw checks the wrong half of the key",
     excerpt:
-      "CERT Polska warned on 5 September that attackers are taking full administrative control of MikroTik routers over internet-facing SSH, with no authentication, by combining two vulnerabilities. Neither the warning nor the disclosure says which two, or how they combine. Defenders get a version list and one log string.",
+      "CERT Polska and MikroTik have named the chain MikroTrick. CVE-2026-67276 validates only an SSH key's type and modulus, so anyone who knows an authorised user's public modulus can forge a key without the private half. CVE-2026-86060 then turns a crafted username into a command-line argument and hands over administrator.",
     categorySlug: "security",
     tags: ["mikrotik", "routeros", "cert-polska", "ssh", "edge-devices", "disclosure"],
     readingMinutes: 8,
@@ -213,22 +213,35 @@ MikroTik has published fixed releases across those branches.
 
 Note where that list starts. **RouterOS 6.0.0** shipped in 2013. The affected range covers essentially every 6.x device that has not been kept current, which in this product's installed base is a great many — MikroTik hardware is cheap, durable, and frequently deployed by people who set it up once.
 
-## What is not being said
+## The two flaws have names
 
-Neither CERT Polska's warning nor the surrounding disclosure identifies the two vulnerabilities, assigns CVEs to them publicly, or explains how they combine to produce unauthenticated administrative access.
+When this article first ran, neither CERT Polska's warning nor the surrounding disclosure identified the vulnerabilities or explained how they combined, and that gap was the story. It has since been filled.
 
-There is a reasonable case for that. A chain that yields pre-auth admin on an internet-facing router, against an installed base that updates slowly, is close to the worst thing to hand out a recipe for. Every hour of delay in publishing the mechanism is an hour more of patching before the exploit becomes commodity. Vendors and CERTs make this trade deliberately and they are often right.
+CERT Polska and MikroTik disclosed **6** RouterOS vulnerabilities on **5 September**, **2** of which chain into the attack now called **MikroTrick**:
 
-There is also a cost, and it lands entirely on defenders.
+**CVE-2026-67276**, **CVSS 9.2** — the SSH authentication bypass. During public key authentication RouterOS validates only the **key type and the modulus**, not the whole key. An RSA public key is a modulus and an exponent, and the modulus is public by definition: it is sitting in the authorized key. So an attacker who can read an authorised user's public key can present something that matches on the fields RouterOS checks, **without ever holding the private key**.
 
-Without knowing the mechanism, you cannot answer the questions you actually need answered:
+**CVE-2026-86060**, **CVSS 9.2** — the escalation. From that pre-authentication state, a **crafted username** is misread by RouterOS's SSH login helper as a **command-line argument**, which yields full administrative privileges.
 
-- Does the chain require SSH specifically, or is SSH the observed path into something broader?
-- Do the compensating controls you already have — source restrictions on the SSH service, a firewall rule, a non-default port — break the chain or merely reduce exposure?
-- Is a device that was internet-facing but has since been firewalled still at risk from something already planted?
-- Does an unaffected version number actually mean unaffected, or untested?
+A third, **CVE-2026-67277** at **8.8**, is a memory disclosure and denial-of-service issue not part of the chain.
 
-"Patch, and if you cannot patch, take SSH off the internet" is good advice and probably sufficient. It is not the same as being able to assess your own estate, and organisations with real change control need the second thing to justify the first.
+## Two textbook classes, one after the other
+
+Worth naming what these are, because both are old and both are avoidable.
+
+The first is **incomplete verification**. The check exists, runs, and returns success — it simply verifies the wrong thing. Validating that a key has the right shape is not the same as validating that the presenter holds the private half, and the whole point of public key authentication is the second one.
+
+The second is **argument injection**: attacker-controlled text reaching a program's argument list, where a leading dash turns data into an instruction. It is the same class as the shell-metacharacter bugs of the 1990s, moved one layer along.
+
+Neither required a novel technique. What made this severe is that they sit next to each other in the one service organisations deliberately leave reachable.
+
+## The timeline is tighter than it looked
+
+Fixes shipped in RouterOS **7.25beta3**, **7.24.2**, **7.23.4** and **6.49.21** on **3 September**. Exploitation has been observed since at least **2 September** — so the fix landed a day after attacks began, and the public warning two days after that.
+
+Reporting puts roughly **122,500** routers exposed.
+
+And the account attackers create is named **ops**, which is a more useful thing to search for than the log string below, because it is what appears in the user list rather than in a log the device owner may no longer have.
 
 ## The detection surface is one string
 
