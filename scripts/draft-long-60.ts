@@ -125,18 +125,26 @@ One further note, offered as an observation rather than a finding: SOCRadar rema
   },
   {
     slug: "stylesmuggler-first-victim-was-fully-patched-and-there-is-no-patch",
-    title: "The first confirmed StyleSmuggler victim was fully patched. There is still no patch",
+    title: "Adobe has patched StyleSmuggler. The first confirmed victim was fully patched too",
     excerpt:
-      "Sansec says attackers have been exploiting an unpatched Magento and Adobe Commerce flaw since 4 September. The first confirmed victim was running 2.4.6-p15 with the August 2026 patches applied. The trigger is Magento rendering a Payment Transaction Failed Reminder — nobody has to open the email.",
+      "CVE-2026-75650 is rated CVSS 10.0 and Adobe shipped the fix on 8 September, four days into active exploitation. Applying it is only half the remediation — the encryption keys have to be rotated as well. And the first confirmed victim was already running the August patches, which is why patching is not the same as being clear.",
     categorySlug: "security",
     tags: ["magento", "adobe-commerce", "zero-day", "sansec", "ecommerce", "backdoor", "rust"],
     readingMinutes: 9,
     coverImageUrl: `https://images.unsplash.com/photo-1763872011479-aa293bf083a8${P}`,
     body: `**Sansec**, the Dutch firm that watches Magento for a living, published an advisory on **5 September 2026** on a flaw it calls **StyleSmuggler**, under active exploitation since **4 September**.
 
-As of **6 September** there is **no CVE, no patch, no Adobe advisory and no vendor workaround**.
+On **Monday 8 September**, Adobe patched it. The flaw is **CVE-2026-75650**, rated **CVSS 10.0**, and Adobe confirmed it "has been exploited in the wild targeting Adobe Commerce merchants".
 
-Affected: **Magento Open Source 2.4.6, 2.4.7, 2.4.8 and 2.4.9**, and Adobe Commerce. All current versions are confirmed vulnerable. Adobe Commerce on Cloud is unconfirmed either way.
+Fixes cover **Magento Open Source 2.4.6 through 2.4.9** and **Adobe Commerce 2.4.4 through 2.4.9**, in the 2026-aug releases, plus B2B 1.3.x through 1.5.3.
+
+## The patch is two steps, and the second one is the one people skip
+
+Adobe's remediation is to apply **VULN-39341** **and rotate the encryption keys**.
+
+Both halves are required. The patch closes the door; rotating the keys is what makes the material an attacker may already have taken useless. An estate that installs the update and stops has fixed the vulnerability and kept the consequences.
+
+This is the part that will be under-communicated, because "patched" is a status a dashboard can show and "keys rotated" is work somebody has to do.
 
 ## The sentence that matters
 
@@ -144,7 +152,9 @@ The first confirmed victim was running **2.4.6-p15 with the latest August 2026 p
 
 Fully patched. Compromised anyway.
 
-That is worth sitting with, because the standard advice does not work here. "Are you up to date" is the first question anyone asks after a Magento incident, and this week the answer is not diagnostic. There are at least **2 confirmed breaches**, verified through independent incident response by Disrex Group and by hosting providers Nexcess and Liquid Web — three parties who do not share an interest in agreeing.
+That is worth sitting with, because the standard advice did not work here. "Are you up to date" is the first question anyone asks after a Magento incident, and for the four days before Adobe shipped, the answer was not diagnostic. There are at least **2 confirmed breaches**, verified through independent incident response by Disrex Group and by hosting providers Nexcess and Liquid Web — three parties who do not share an interest in agreeing.
+
+The speed is its own data point. One Magento server run by an e-commerce development platform was compromised **50 minutes** after the first confirmed StyleSmuggler report went out at 10:20 p.m. UTC on 4 September. Whatever window existed between disclosure and exploitation, it was under an hour.
 
 ## The email nobody opens
 
@@ -191,21 +201,19 @@ Note the **.gvfsd** naming — it borrows from GNOME's virtual filesystem daemon
 
 ## What to do
 
+- **Apply VULN-39341, then rotate your encryption keys.** One without the other is half a remediation.
 - **Check the process table for [kworker/…] entries whose parent is not PID 2.** This is the fastest possible triage and it costs nothing.
 - **Search for the file paths above**, particularly anything matching /tmp/.gvfsd_ or /tmp/.kw_.
-- **Do not wait for the patch to start looking.** Exploitation began on 4 September and the vendor has published nothing. Detection is the only thing available.
-- **Treat "we are on the latest patch" as irrelevant to this one.** The first victim was.
+- **Patching is not clearance.** Exploitation ran from 4 to 8 September against stores that were up to date. If yours was reachable in that window, look before you close the ticket.
 - **Review what your Magento process can write**, and whether templated emails need to render with the permissions they currently have. The injection target is files Magento writes itself.
-- **Watch Sansec rather than the CVE feed.** There is no CVE, so vulnerability scanners have nothing to key on.
 
 ## What is not established
 
 - **The full exploit chain.** Sansec has not published it, deliberately.
-- **Whether Adobe Commerce on Cloud is affected.**
+- **Whether Adobe Commerce on Cloud is affected.** Adobe's advisory does not address it.
 - **How many stores are compromised.** Two are confirmed; the real figure is unknown.
 - **Whether the installed backdoors have been used** since installation.
-- **Who is behind it.**
-- **Whether the unofficial patches circulating are complete.** Nobody has verified them against an unpublished chain.`,
+- **Who is behind it.**`,
   },
   {
     slug: "jsceal-nothing-in-google-authentication-was-bypassed",
