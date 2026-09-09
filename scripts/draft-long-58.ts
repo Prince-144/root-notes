@@ -118,9 +118,9 @@ Without that, nobody outside the company can assess how far the consumer surface
   },
   {
     slug: "n-central-cve-2026-86218-unauthenticated-rce-in-the-box-that-manages-the-boxes",
-    title: "N-able's release notes say it is not exploited. N-able's incident notice says it is",
+    title: "N-able's two documents disagreed about exploitation. CISA has settled it",
     excerpt:
-      "CVE-2026-86218 is a CVSS 10.0 pre-authentication RCE in N-central, patched on Saturday in the fourth hotfix in five weeks and one day after the third. Two of N-able's own documents disagree about whether it is being exploited in the wild, and the company has not said which is current.",
+      "CVE-2026-86218 is a CVSS 10.0 pre-authentication RCE in N-central, patched in the fourth hotfix in five weeks. For two days the vendor's release notes and its incident notice said opposite things about whether it was being exploited. CISA added it to the KEV catalogue on 8 September with a three-day federal deadline.",
     categorySlug: "security",
     tags: ["n-able", "n-central", "cve-2026-86218", "rmm", "msp", "unauthenticated-rce"],
     readingMinutes: 8,
@@ -142,19 +142,25 @@ The chain begins with an **incomplete fix**. It ends, a day after the previous e
 
 If you patched on 5 September and closed the ticket, you are not patched. [We have been here before with this product](/article/storm-1175-stormencryptor-n-central-patch-bypass); on N-central, treat any hotfix as an increment rather than a conclusion.
 
-## The two statements
+## The two statements, and how it resolved
 
-Here is the part that should not be smoothed over, because it is not the usual vendor-versus-researcher disagreement.
+For two days this was a vendor contradicting itself.
 
-**N-able's release notes and status post** say there are "no confirmations that this vulnerability has been exploited in production environments".
+**N-able's release notes and status post** said there were "no confirmations that this vulnerability has been exploited in production environments". **N-able's incident notice** said the flaw "has been observed being exploited in the wild". Same company, same CVE, same week, and no explanation of which was current.
 
-**N-able's incident notice** says the flaw "has been observed being exploited in the wild".
+On **8 September** it resolved, in favour of the worse statement. **CISA added CVE-2026-86218 to the Known Exploited Vulnerabilities catalogue**, with a patching deadline of **11 September** for federal civilian agencies — three days, which is the shortest end of what CISA issues. N-able's own urgent customer notice now says the flaw "has been observed being exploited in the wild" and that the company is "actively investigating this matter and have taken additional steps to help protect customer environments".
 
-Those are the same company, about the same CVE, at the same time. N-able has not said which statement is current or published evidence for either, and the difference is not academic: one of them means patch on your normal emergency schedule, and the other means assume compromise.
+So the advice in the earlier version of this article — that with the vendor's documents disagreeing you should act on the worse one — turned out to be the right call. That is not a boast. It is the general rule: when a vendor says two things, the expensive assumption is the safe one, because the cost of being wrong is asymmetric.
 
-Meanwhile **Huntress** — which investigated a customer compromise on **4 September** — says it cannot determine from its own data whether CVE-2026-86218 was the vulnerability used.
+## Still nobody can say which flaw was used
 
-So the honest state of knowledge is: the vendor's own documents disagree, the firm that looked at an actual intrusion cannot tell, and the flaw scores 10.0. Anyone telling you confidently which way it goes is filling in a blank.
+The one thing that has not resolved is the intrusion itself.
+
+Huntress investigated an N-central environment compromised on **4 September** that was up to date with the patches available at the time. It still cannot say whether CVE-2026-86218 or the earlier CVE-2026-86206 and CVE-2026-86207 were used, and it explains why in a sentence worth quoting:
+
+> Due to limited historical logging available directly on the appliance, we cannot definitively confirm which specific exploit
+
+An appliance that manages other people's infrastructure does not keep enough of its own history for anyone to reconstruct what happened on it. That is a product decision, not an accident, and it is the reason four patched CVEs in five weeks cannot be sorted into "the one that got used" and "the rest".
 
 ## Why 1,500 is the wrong number to look at
 
@@ -175,7 +181,7 @@ And in the compromise Huntress examined, the vector could not be established. Th
 ## What to do
 
 - **Confirm the running build is 2026.3.1.14.** Not "we patched last week". Check the version, not the change ticket.
-- **Given the contradiction, act on the worse statement.** If your N-central was internet-facing and unpatched at any point since 31 July, hunt rather than assume. It costs less than being wrong.
+- **Assume compromise if you were exposed.** Exploitation is confirmed and CISA's federal deadline was 11 September. If your N-central was internet-facing and unpatched at any point since 31 July, hunt rather than assume.
 - **If you are an MSP customer, ask your provider today** which build their N-central is on and when it was applied. You are downstream of a box you do not control.
 - **Take the N-central web interface off the public internet.** Roughly 1,500 organisations have not, and no configuration of this product requires it.
 - **Extend log retention on management infrastructure before you need it.** The reason nobody can attribute the September compromise is a retention setting somebody accepted by default.
@@ -183,7 +189,7 @@ And in the compromise Huntress examined, the vector could not be established. Th
 
 ## What is not established
 
-- **Whether CVE-2026-86218 has been exploited.** N-able's own two documents say opposite things.
+- **Who is exploiting it.** Confirmed exploitation, no named actor.
 - **What the vector was** in the 4 September compromise. Huntress says its data cannot answer it.
 - **How many customers were affected** by the 31 July intrusion. "A limited number" is the only figure given.
 - **How many of the 1,500 exposed servers are unpatched**, as opposed to merely visible.
