@@ -54,23 +54,25 @@ By product: **723** in Windows, **111** in Office, **62** in SQL, **22** in deve
 
 ## Start with the two
 
-Everything above is context. Two of the 974 are being exploited right now, and both are the same shape:
+**2** of the 974 are being exploited right now, and both are the same shape. **CVE-2026-85880**, **CVSS 7.8**, is a heap-based buffer overflow in the Windows **Advanced Local Procedure Call** subsystem. **CVE-2026-81963**, also **7.8**, is an improper link resolution flaw in the **Windows Update Stack**. Neither is remote: both need an attacker already executing code on the machine, and both end at SYSTEM.
 
-**CVE-2026-85880** — **CVSS 7.8**, a heap-based buffer overflow in the Windows **Advanced Local Procedure Call** subsystem, letting an authorised attacker elevate to SYSTEM.
-
-**CVE-2026-81963** — **CVSS 7.8**, an improper link resolution flaw in the **Windows Update Stack**, allowing local privilege escalation.
-
-Neither is remote. Both require the attacker to already be executing code on the machine as some user. That is not a reason to relax — it is a description of where they sit in a chain, and it tells you exactly what to prioritise.
+That is not a reason to relax. It is a description of where they sit in a chain, and it tells you exactly what to prioritise.
 
 If an attacker has a foothold, these are what turn it into ownership of the host. [The browser toolkit we covered this week needed precisely this](/article/peep-forges-chromium-secure-preferences-integrity-values) — prior administrative or code execution access, which it does not supply itself. Local privilege escalation is the missing half of a great many post-compromise toolkits, and September shipped two working ones.
 
 Patch those two first. The other 972 can follow your normal cycle.
 
+## Why the total is the wrong unit
+
+Treating **974** as 974 emergencies means doing all of them badly, and the distribution says why. **723** are in Windows, **111** in Office, **62** in SQL, **22** in developer tools — and roughly **90%** fall into three classes: privilege escalation, remote code execution and information disclosure. More than **110** carry a critical rating, which is far more than any team can put first.
+
+So the number to work from is not 974. It is the count of things reachable from somewhere an attacker can already stand, which for most estates is a small fraction of the total and does not correlate well with CVSS. Rank by exposure. A critical flaw in a component you do not run is not a critical flaw for you, and a 7.8 that is being exploited is.
+
 ## The number is a counting event, not a security event
 
-**974** against a previous record of **569** is a **70%** jump in one month, and against 2026's earlier months — **457** in August, **220** in June, **161** in May — it is not a trend, it is a discontinuity.
+**974** against a previous record of **569** is a **70%** jump in one month. Set beside the rest of the year — **457** in August, **663** or thereabouts in July depending on whose count you take, **220** in June, **161** in May — it is not a trend, it is a discontinuity. Software does not get four times worse in four months, so something about how these are found, counted or disclosed changed, and Microsoft has not said what.
 
-Software does not get four times worse in four months. Something about how these are found, counted or disclosed changed, and Microsoft has not said what. The candidates, none of them established:
+The candidates, none of them established:
 
 - **Automated discovery at scale.** Fuzzing and AI-assisted analysis produce findings faster than triage historically did, and a backlog eventually ships.
 - **A change in what gets a CVE.** Components that previously shipped fixes silently — cloud-side, edge, service code — being issued CVEs would move the number without changing anything about risk.
