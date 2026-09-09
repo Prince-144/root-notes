@@ -54,21 +54,17 @@ The chain is worth following step by step, because each step is chosen to defeat
 
 ## How the shell gets into memory
 
-An installer named **umount** prepends malicious code to the Apache binary at **/usr/sbin/httpd**.
+An installer named **umount** prepends malicious code to the Apache binary at **/usr/sbin/httpd**. When Apache loads, that code hooks the runtime function **apr_dso_load** and waits for the PHP module. The moment PHP loads, it reads **/proc/self/maps**, makes memory pages writable, and rewrites the file-access calls. Then it waits for **3** specific scripts and inserts the web shell in front of the original content.
 
-When Apache loads, that code hooks the Apache Portable Runtime function **apr_dso_load** and waits for the PHP module to be activated.
-
-The moment PHP loads, the malware reads **/proc/self/maps**, makes memory pages temporarily writable, and rewrites the file-access function calls.
-
-Then it waits for one of exactly three scripts — **apm_css.php3**, **full_wt.php3**, **webtop_popup_css.php3** — and when one is loaded, inserts the web shell **in front of the original content**.
+The three are **apm_css.php3**, **full_wt.php3** and **webtop_popup_css.php3**.
 
 Sophos's own summary of why that matters: **"The web shell does not need to exist in its final form on disk."**
 
 ## Which control that defeats, precisely
 
-File integrity monitoring on an appliance usually works by comparing files against known-good copies. Those three .php3 files on disk are unmodified. They hash correctly. A diff against the vendor image comes back clean.
+File integrity monitoring on an appliance compares files against known-good copies. Those **3** .php3 files on disk are unmodified: they hash correctly, and a diff against the vendor image comes back clean. The shell is assembled in memory as the file is read, so the artefact you would compare never touches the filesystem. That is what Sophos means by the shell not needing to exist in its final form on disk.
 
-The shell is assembled in memory as the file is read, so the artefact you would compare never touches the filesystem. F5 notes that changes to those three scripts do not on their own confirm compromise — which cuts both ways, because their absence does not clear you either.
+F5 notes that changes to those three scripts do not on their own confirm compromise — which cuts both ways, because their absence does not clear you either.
 
 [The HAProxy implant last week reached the same destination differently](/article/ted-implant-haproxy-2-8-12-not-a-haproxy-vulnerability), by being version-identical to a clean build. Both are the same idea: do not evade the check, arrange for the check to pass.
 
@@ -84,9 +80,7 @@ ESET reports the malware is built to survive upgrades by infecting installation 
 
 **CVE-2025-53521** is the way in: unauthenticated remote code execution, **CVSS 9.8/9.3**, affecting BIG-IP APM where an access policy is configured on virtual servers.
 
-It was published in **October 2025** as a **denial of service**, and reclassified on **27 March 2026** after exploitation was discovered.
-
-Sit with what that means for anyone who triaged it at the time. A DoS on an edge appliance is a real issue and a routine one — it goes in the next maintenance window, behind anything that grants access. That was a correct decision on the information published, and it was wrong for **five months**.
+Published in **October 2025** as a **denial of service**, it was reclassified on **27 March 2026** as unauthenticated remote code execution, after exploitation was discovered. A denial of service on an edge appliance is a real issue and a routine one: it goes in the next maintenance window, behind anything that grants access. That was a correct decision on the information published, and it was wrong for **5** months.
 
 The patch has existed since October 2025. The reason to install it changed in March 2026, and nothing about the CVE identifier changed to make anyone look again.
 
