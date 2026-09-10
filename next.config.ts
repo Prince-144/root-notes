@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
       // Uploaded covers. Each Vercel Blob store gets its own subdomain, so
       // the host isn't knowable ahead of time.
       { protocol: "https", hostname: "**.public.blob.vercel-storage.com" },
+      // Apple press images for product coverage. Scoped to the newsroom asset
+      // path so this doesn't become a general permission to embed anything on
+      // apple.com. These are hotlinked, not copied — Apple can re-cut or drop
+      // an asset and the cover goes with it, so prefer an upload for anything
+      // that needs to stay put.
+      { protocol: "https", hostname: "www.apple.com", pathname: "/newsroom/images/**", search: "" },
     ],
   },
   poweredByHeader: false,
@@ -18,7 +24,7 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://www.google-analytics.com https://www.googletagmanager.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://www.apple.com/newsroom/images/ https://www.google-analytics.com https://www.googletagmanager.com",
       "font-src 'self' data:",
       "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com",
       "object-src 'none'",
