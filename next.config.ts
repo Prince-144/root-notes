@@ -3,6 +3,13 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
   images: {
+    // Vercel's image optimizer returns 402 once the plan's monthly quota of
+    // source images is used up, and every cover on the site breaks at once —
+    // which is what happened on 10 September 2026. Serving the source URLs
+    // directly costs nothing and cannot run out. Unsplash covers already
+    // carry w/h/q parameters so they arrive pre-sized; Apple newsroom assets
+    // are the only ones served larger than they are displayed.
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
