@@ -35,11 +35,18 @@
  *
  * Quotations are kept short and few; the rest is paraphrased with attribution.
  *
- * Covers checked at full 1600x900 and reuse-checked. No photograph of Sogou
- * Input Method exists on an allowlisted host, so its cover is Tencent's
- * Shenzhen headquarters, the company that owns and patched it. Candidates were
- * rejected for Ledger and Revolut branding on the Trezor story, a Thai keyboard
- * on the Chinese input story, and a Defender pop-up and an HP laptop.
+ * Covers checked at full 1600x900 and reuse-checked. Candidates were rejected
+ * for Ledger and Revolut branding on the Trezor story, a Thai keyboard on the
+ * Chinese input story, and a Defender pop-up and an HP laptop.
+ *
+ * The Sogou cover is the product itself, from public/covers/: Sogou Input
+ * Method's candidate window mid-typing (搜狗, then shu offering 数 and 书) with
+ * one of its skins, taken from the animated hero on Sogou's official site,
+ * shurufa.sogou.com. Captured with headless Chrome at 4x on 15 September 2026,
+ * cropped below a drop shadow the page draws under a sticker, and centred on
+ * white, which is the document background it sits on. The first cover, Tencent's
+ * Shenzhen headquarters, was replaced because it showed the owner, not the
+ * software. Live only after the next deploy.
  *
  * No backticks and no angle brackets in the bodies.
  */
@@ -296,7 +303,7 @@ It is Trezor's second third-party breach in a matter of weeks. [Its fulfilment p
     categorySlug: "security",
     tags: ["sogou", "tencent", "unc3569", "grayrabbit", "chromium", "cve-2026-51990", "gen-digital", "china"],
     readingMinutes: 9,
-    coverImageUrl: `https://images.unsplash.com/photo-1658367063280-3b97e6745cdd${P}`,
+    coverImageUrl: "/covers/sogou-input-method.jpg",
     body: `**Gen Threat Labs**, the research arm of the company behind Norton and Avast, published research on **10 September 2026** into **CVE-2026-51990**, a remote code execution flaw in **Sogou Input Method**. It is the Chinese-language input software for Windows that Tencent owns, and Gen says it has hundreds of millions of installations.
 
 Gen did not find the bug in a lab. It traced it while investigating an intrusion by **UNC3569**, a China-linked group tracked by Google Threat Intelligence, which was using it to install a backdoor called **GRAYRABBIT**.
