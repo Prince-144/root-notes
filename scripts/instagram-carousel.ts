@@ -326,6 +326,10 @@ ${FOOTER}
  */
 function clean(text: string): string {
   return text
+    // Images first. The link rule below would otherwise turn ![alt](url) into
+    // "!alt", leaving a descriptive alt text to be scored and printed as if it
+    // were a sentence. The target may hold a quoted caption with parentheses.
+    .replace(/!\[[^\]]*\]\((?:[^()]|\([^()]*\))*\)/g, "")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/[*`]/g, "")
     .replace(/\s+/g, " ")
@@ -369,9 +373,11 @@ function sections(body: string): Section[] {
     // flattens them into one run-on sentence — "1. Start a password-recovery
     // flow 2. Choose the AI support option 3. Tell the bot…" — which then
     // overflows the slide and truncates mid-clause.
+    // An inline image on its own line is a paragraph too, and its URL is full of
+    // digits that would earn the figure bonus — it has nothing to put on a slide.
     const eligible = paragraphs.filter(
       (p) =>
-        !/^([|>`#]|[-*+] |\d+\. )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
+        !/^([|>`#]|!\[|[-*+] |\d+\. )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
     );
 
     // Not the first eligible paragraph — the best one. A section often opens

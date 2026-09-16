@@ -26,6 +26,7 @@ if (!slug) {
 
 function clean(text: string): string {
   return text
+    .replace(/!\[[^\]]*\]\((?:[^()]|\([^()]*\))*\)/g, "")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/[*`]/g, "")
     .replace(/\s+/g, " ")
@@ -82,7 +83,7 @@ for (const block of doc.body.split(/\n(?=## )/)) {
     .filter(Boolean);
 
   const eligible = paragraphs.filter(
-    (p) => !/^([|>`#]|[-*+] |\d+\. )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
+    (p) => !/^([|>`#]|!\[|[-*+] |\d+\. )/.test(p) && !p.endsWith(":") && clean(p).length > 40,
   );
 
   console.log(`\n## ${match[1].trim()}`);

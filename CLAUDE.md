@@ -27,6 +27,13 @@ Requires `DATABASE_URI` (Postgres connection string) and `PAYLOAD_SECRET` in `.e
 
 [lib/articles.ts](lib/articles.ts) wraps Payload's local API and exposes the same read functions the rest of the app calls: `getArticles(limit?)`, `getFeatured()`, `getByCategory(slug)`, `getBySlug(slug)`, `getRelated(article, limit?)`, `getTrending(limit)`, `formatDate(iso)`. All of these except `formatDate` are now `async` (they weren't in the Step-1/2 in-memory version) — every call site awaits them. The `articles` collection is defined in [collections/Articles.ts](collections/Articles.ts); its `body` field stores raw MDX source (a `code` field, not Payload richText) specifically so `article.body` keeps flowing straight into `<MDXRemote source={article.body} />` unchanged. When adding content-related functionality, add it here rather than calling Payload's local API directly from components or pages.
 
+### Images inside article bodies
+
+An inline image is plain markdown in the body: `![alt](url "Optional caption")`. On a line of its own it renders as a `<figure>` with the quoted text as its `<figcaption>`; inside a sentence it stays an inline `<img>`. The figure is built by the `p` component in [components/mdx-components.tsx](components/mdx-components.tsx), because markdown wraps a lone image in a paragraph and a figure inside a `<p>` is a hydration error.
+
+- **Where the image lives matters.** The CSP `img-src` in `next.config.ts` admits only a few hosts; an image hotlinked from anywhere else renders as nothing, with no error. Upload it to the Media collection instead — its edit view shows the ready-to-paste markdown (`components/admin/media-markdown.tsx`), with the alt text stripped of the brackets and braces that would break the markdown or the MDX compile.
+- **Carousels skip images.** `scripts/instagram-carousel.ts` and `scripts/carousel-scores.ts` exclude image-only paragraphs and strip image markdown in `clean()`; an image URL is full of digits and would otherwise win the figure bonus and print on a slide. Keep the two files in step.
+
 ### Admin panel lives in its own route group
 
 The Payload admin UI needs its own `<html>` document, so the app is split into two route groups under `app/`: `(frontend)/` holds the actual site (former root `layout.tsx`, `page.tsx`, `globals.css`, `article/`, `category/` — moved here unchanged, URLs unaffected since route groups don't appear in the path), and `(payload)/` holds the admin panel (`/admin`) plus the REST (`/api/[...slug]`) and GraphQL (`/api/graphql`) routes. `payload.config.ts` lives at the repo root; `@payload-config` (see `tsconfig.json` paths) points to it. `next.config.ts` is wrapped in `withPayload(...)`.

@@ -14,6 +14,7 @@ import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
+import { articleMdxComponents } from "@/components/mdx-components";
 
 export async function generateStaticParams() {
   const articles = await getArticles();
@@ -163,6 +164,7 @@ export default async function ArticlePage({
             without this the comparison in a piece silently turns to noise. */}
         <MDXRemote
           source={article.body}
+          components={articleMdxComponents}
           options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
         />
       </article>

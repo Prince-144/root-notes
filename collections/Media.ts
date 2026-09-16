@@ -1,7 +1,8 @@
 import type { CollectionConfig } from "payload";
 
 /**
- * Uploaded images, used for article cover art.
+ * Uploaded images, used for article covers and for images inside article
+ * bodies. The edit view shows the markdown for the second use.
  *
  * Files live in Vercel Blob, not on disk (see payload.config.ts). Vercel's
  * filesystem is ephemeral and read-only outside /tmp, so Payload's default
@@ -36,6 +37,16 @@ export const Media: CollectionConfig = {
       type: "text",
       required: true,
       admin: { description: "Describe the image for screen readers and when it fails to load." },
+    },
+    // A `ui` field stores nothing, so this adds no column and needs no migration.
+    {
+      name: "markdownSnippet",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "@/components/admin/media-markdown#MediaMarkdown",
+        },
+      },
     },
   ],
 };

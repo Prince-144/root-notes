@@ -585,6 +585,19 @@ body {
   border: 1px solid var(--line);
 }
 
+/* Inline body images: markdown ![alt](url "Caption") on its own line renders
+   as a figure (components/mdx-components.tsx). Browsers give <figure> a 40px
+   side margin by default, which would push the image off the text column.
+   Preflight already caps width and keeps height proportional; auto margins
+   centre an image narrower than the column instead of leaving it flush left. */
+.article-body figure {
+  margin-inline: 0;
+}
+
+.article-body figure img {
+  margin-inline: auto;
+}
+
 .article-body figcaption {
   font-family: var(--font-mono);
   font-size: 0.75rem;
