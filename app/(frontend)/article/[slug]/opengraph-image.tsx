@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getArticles, getBySlug } from "@/lib/articles";
+import { getArticles, getSummaryBySlug } from "@/lib/articles";
 import { siteConfig } from "@/site.config";
 
 export const size = { width: 1200, height: 630 };
@@ -24,7 +24,9 @@ export default async function ArticleOpengraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = await getBySlug(slug);
+  // Summary, not getBySlug: the card draws the title, author and category, and
+  // the full body is the largest thing in the database.
+  const article = await getSummaryBySlug(slug);
   const accent = article ? (CATEGORY_COLORS[article.categorySlug] ?? "#3b7dff") : "#3b7dff";
 
   return new ImageResponse(

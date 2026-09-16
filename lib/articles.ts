@@ -91,14 +91,7 @@ const LIST_SELECT = {
   coverImage: true,
 } as const;
 
-/**
- * The single DB round trip everything else derives from, memoized per
- * request via React `cache()` — calling `getArticles`, `getFeatured`,
- * `getByCategory`, `getBySlug`, etc multiple times in the same render
- * (e.g. `generateMetadata` + the page component) hits Postgres once, not once
- * per call.
- */
-const fetchAllArticles = cache(async (): Promise<ArticleSummary[]> => {
+async function queryAllArticles(): Promise<ArticleSummary[]> {
   const payload = await getPayload({ config });
   const { docs } = await payload.find({
     collection: "articles",
@@ -111,6 +104,45 @@ const fetchAllArticles = cache(async (): Promise<ArticleSummary[]> => {
     select: LIST_SELECT,
   });
   return docs.map(normalize);
+}
+
+/**
+ * True inside `next build`. Next sets NEXT_PHASE in the build process
+ * immediately before it forks the static generation workers, and the workers
+ * inherit the parent's environment (node_modules/next/dist/build/index.js,
+ * node_modules/next/dist/lib/worker.js).
+ */
+const IS_BUILD = process.env.NEXT_PHASE === "phase-production-build";
+
+let buildList: Promise<ArticleSummary[]> | null = null;
+
+/**
+ * The single DB round trip everything else derives from.
+ *
+ * React `cache()` dedupes within one render, so `generateMetadata` and the page
+ * share a query. It does nothing across renders, and `next build` renders
+ * every page separately: each article page, OG image, tag, category and
+ * pagination page asked Postgres for the whole list again — on the order of a
+ * thousand full-list queries per deploy. Together with frequent deploys, that
+ * exhausted the database's monthly data-transfer quota in September 2026.
+ *
+ * So during a build the list is fetched once per worker process and shared.
+ *
+ * Never at runtime. After an admin publish, revalidatePath regenerates pages on
+ * their next request and caches the result indefinitely; a list held over from
+ * before the publish would bake the new article out of those pages until
+ * something else revalidated them.
+ */
+const fetchAllArticles = cache(async (): Promise<ArticleSummary[]> => {
+  if (!IS_BUILD) return queryAllArticles();
+  if (!buildList) {
+    buildList = queryAllArticles().catch((err) => {
+      // Fail the pages that asked, rather than hand one failure to every later page.
+      buildList = null;
+      throw err;
+    });
+  }
+  return buildList;
 });
 
 /** Newest first. */
@@ -181,6 +213,32 @@ export const getBySlug = cache(async (slug: string): Promise<Article | undefined
     ? { ...normalize(doc), body: doc.body, updatedAt: doc.updatedAt ?? undefined }
     : undefined;
 });
+
+/**
+ * One article's list fields, without the body — for callers that only need the
+ * headline, like the OG image. Those used getBySlug and pulled every article's
+ * full MDX during a build just to draw its title.
+ *
+ * During a build it reads the shared list and costs no query at all. At
+ * runtime it selects one row's list fields rather than the whole list, which
+ * matters for an article published after the last deploy: its OG image renders
+ * on first request.
+ */
+export const getSummaryBySlug = cache(
+  async (slug: string): Promise<ArticleSummary | undefined> => {
+    if (IS_BUILD) return (await fetchAllArticles()).find((a) => a.slug === slug);
+
+    const payload = await getPayload({ config });
+    const { docs } = await payload.find({
+      collection: "articles",
+      where: { slug: { equals: slug }, status: { equals: "published" } },
+      limit: 1,
+      depth: 1,
+      select: LIST_SELECT,
+    });
+    return docs[0] ? normalize(docs[0]) : undefined;
+  },
+);
 
 /**
  * Ranked by shared tags first, then category, then recency.

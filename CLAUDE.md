@@ -27,6 +27,16 @@ Requires `DATABASE_URI` (Postgres connection string) and `PAYLOAD_SECRET` in `.e
 
 [lib/articles.ts](lib/articles.ts) wraps Payload's local API and exposes the same read functions the rest of the app calls: `getArticles(limit?)`, `getFeatured()`, `getByCategory(slug)`, `getBySlug(slug)`, `getRelated(article, limit?)`, `getTrending(limit)`, `formatDate(iso)`. All of these except `formatDate` are now `async` (they weren't in the Step-1/2 in-memory version) — every call site awaits them. The `articles` collection is defined in [collections/Articles.ts](collections/Articles.ts); its `body` field stores raw MDX source (a `code` field, not Payload richText) specifically so `article.body` keeps flowing straight into `<MDXRemote source={article.body} />` unchanged. When adding content-related functionality, add it here rather than calling Payload's local API directly from components or pages.
 
+### Database traffic is metered — keep it small
+
+In September 2026 the Neon project was cut off for exceeding its monthly data-transfer quota: the admin panel, `/search`, `/rss.xml` and every `/api` route returned 500 until the database was replaced. Egress is billed per byte leaving the database, so the rules are about not moving rows needlessly:
+
+- **Builds share one article list per worker.** `lib/articles.ts` memoizes the full list across renders only when `process.env.NEXT_PHASE === "phase-production-build"`. Before this, each of ~290 article pages, ~290 OG images and every tag, category and pagination page queried the whole list separately — about a thousand full-list queries per deploy. Never extend the memo to runtime: revalidated pages are cached indefinitely, and a stale list would bake a newly published article out of them.
+- **List views never select `body`** (`LIST_SELECT`). Anything that only needs a headline uses `getSummaryBySlug`, not `getBySlug`.
+- **`scripts/check-mdx.ts` checks drafts and recent changes by default**; pass slugs, or `--all` for a full sweep.
+- **Batch deploys.** Every deploy re-renders the whole site against the database. Several content edits can go out in one deploy.
+- **Scripts that scan many articles select only the fields they read** — never full documents in a loop.
+
 ### Images inside article bodies
 
 An inline image is plain markdown in the body: `![alt](url "Optional caption")`. On a line of its own it renders as a `<figure>` with the quoted text as its `<figcaption>`; inside a sentence it stays an inline `<img>`. The figure is built by the `p` component in [components/mdx-components.tsx](components/mdx-components.tsx), because markdown wraps a lone image in a paragraph and a figure inside a `<p>` is a hydration error.
