@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
-import { ArticleRow, TrendingRow } from "@/components/article-card";
+import { ArticleRow } from "@/components/article-card";
 import { NewsletterBox } from "@/components/newsletter-box";
-import { formatDate, getArticles, getFeatured, getTrending } from "@/lib/articles";
+import { formatDate, getArticles, getFeatured } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
 import { paginate } from "@/lib/pagination";
@@ -21,7 +21,6 @@ export default async function HomePage() {
   // reader's scroll and growing by nine articles a day. A page still fills the
   // box several times over, and the rest is a link away.
   const { items: latest, totalPages } = paginate(allArticles, 1);
-  const trending = await getTrending(5);
 
   // Counted from the list already in hand rather than a query per category.
   // Published only, since that's what getArticles returns — the number a
@@ -120,59 +119,37 @@ export default async function HomePage() {
         changed, and tells you why it matters before it tells you what happened.
       </p>
 
-      {/* ---------- MAIN GRID ----------
-          The sidebar column only exists when there's trending data to put in
-          it (see getTrending). Keeping the two-column track unconditionally
-          would leave a 280px hole beside the feed until then. */}
-      <div
-        className={
-          trending.length > 0
-            ? "mt-16 grid gap-12 lg:grid-cols-[1fr_280px]"
-            : "mt-16"
-        }
-      >
-        <section>
-          <h2 className="text-lg font-semibold tracking-tight text-fg">
-            Latest analysis
-          </h2>
-          {/* The whole archive lives in here and the box scrolls, so the page
-              stays the same height whether there are twenty articles or two
-              hundred, and Coverage and the newsletter sit just below the feed.
+      {/* ---------- LATEST ---------- */}
+      <section className="mt-16">
+        <h2 className="text-lg font-semibold tracking-tight text-fg">
+          Latest analysis
+        </h2>
+        {/* The whole archive lives in here and the box scrolls, so the page
+            stays the same height whether there are twenty articles or two
+            hundred, and Coverage and the newsletter sit just below the feed.
 
-              1820px is ten rows at their measured height — tying it to a vh
-              value made the visible count depend on the reader's screen.
+            1820px is ten rows at their measured height — tying it to a vh
+            value made the visible count depend on the reader's screen.
 
-              Large screens only. On a phone a scroll region this tall swallows
-              the page gesture, so there the feed stays in normal flow. */}
-          <div className="feed-cap-mobile mt-6 lg:max-h-[1820px] lg:overflow-y-auto lg:pr-3">
-            {latest.map((article) => (
-              <ArticleRow key={article.slug} article={article} />
-            ))}
-          </div>
+            Large screens only. On a phone a scroll region this tall swallows
+            the page gesture, so there the feed stays in normal flow. */}
+        <div className="feed-cap-mobile mt-6 lg:max-h-[1820px] lg:overflow-y-auto lg:pr-3">
+          {latest.map((article) => (
+            <ArticleRow key={article.slug} article={article} />
+          ))}
+        </div>
 
-          <Pagination basePath="/" page={1} totalPages={totalPages} />
+        <Pagination basePath="/" page={1} totalPages={totalPages} />
 
-          {/* The feed is paged now, so this is the way to reach a specific
-              piece rather than walking back through the archive. */}
-          <Link
-            href="/search"
-            className="mt-6 inline-block font-mono text-sm text-accent transition-opacity hover:opacity-70"
-          >
-            Search all {allArticles.length} articles →
-          </Link>
-        </section>
-
-        {trending.length > 0 && (
-          <aside className="lg:sticky lg:top-20 lg:self-start">
-            <h2 className="label-mono">Trending now</h2>
-            <ul className="mt-3">
-              {trending.map((article, i) => (
-                <TrendingRow key={article.slug} article={article} index={i} />
-              ))}
-            </ul>
-          </aside>
-        )}
-      </div>
+        {/* The feed is paged now, so this is the way to reach a specific
+            piece rather than walking back through the archive. */}
+        <Link
+          href="/search"
+          className="mt-6 inline-block font-mono text-sm text-accent transition-opacity hover:opacity-70"
+        >
+          Search all {allArticles.length} articles →
+        </Link>
+      </section>
 
       {/* ---------- COVERAGE ----------
           Below the feed, not above it: this is where you look once you've

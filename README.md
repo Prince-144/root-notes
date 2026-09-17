@@ -21,18 +21,18 @@ site.config.ts              ← site name, tagline, categories, nav. Change name
 app/
   globals.css               ← ALL design tokens: colours, fonts, spacing, article typography
   layout.tsx                ← root shell, fonts, SEO metadata
-  page.tsx                  ← homepage (terminal hero + latest grid + trending sidebar)
+  page.tsx                  ← homepage (terminal hero + latest feed + coverage)
 components/
   site-header.tsx           ← sticky header, mono nav, mobile menu
   site-footer.tsx           ← footer + socials + status line
   theme-provider.tsx        ← next-themes wrapper (dark default)
   theme-toggle.tsx          ← dark/light switch
   terminal-window.tsx       ← the fake terminal chrome (reusable)
-  article-card.tsx          ← card + numbered trending row
+  article-card.tsx          ← article row for the feeds
   tag-chip.tsx              ← category chips
   newsletter-box.tsx        ← subscribe form (UI only for now)
 lib/
-  articles.ts               ← sample data + HN gravity trending algorithm
+  articles.ts               ← article queries (Payload) + related-posts ranking
 ```
 
 ## Design tokens

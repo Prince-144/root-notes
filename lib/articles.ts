@@ -45,7 +45,6 @@ type ListDoc = Pick<
   | "publishedAt"
   | "readingMinutes"
   | "featured"
-  | "views"
   | "coverImageUrl"
   | "coverImage"
 >;
@@ -62,7 +61,6 @@ function normalize(doc: ListDoc): ArticleSummary {
     publishedAt: doc.publishedAt,
     readingMinutes: doc.readingMinutes,
     featured: doc.featured ?? false,
-    views: doc.views ?? 0,
     coverImageUrl: resolveCover(doc),
     coverImageAlt:
       doc.coverImage && typeof doc.coverImage === "object"
@@ -86,7 +84,6 @@ const LIST_SELECT = {
   publishedAt: true,
   readingMinutes: true,
   featured: true,
-  views: true,
   coverImageUrl: true,
   coverImage: true,
 } as const;
@@ -267,39 +264,6 @@ export async function getRelated(
 
   scored.sort((x, y) => y.score - x.score || y.when - x.when);
   return scored.slice(0, limit).map((s) => s.a);
-}
-
-/**
- * Views the leader needs before a trending list means anything.
- *
- * Under this, the ranking is decided by a handful of stray hits — one reader
- * refreshing twice would outrank everything else. An empty list is honest;
- * a list built from three page views is not.
- */
-const TRENDING_MIN_VIEWS = 50;
-
-/**
- * Hacker News gravity ranking: recent + popular beats merely popular.
- * score = views / (hours_since_publish + 2)^1.5
- *
- * Returns nothing until there's real traffic to rank — callers should treat
- * an empty array as "no trending data yet", not as an error.
- */
-export async function getTrending(limit = 5): Promise<ArticleSummary[]> {
-  const articles = await getArticles();
-  const now = Date.now();
-
-  const ranked = articles
-    .filter((a) => (a.views ?? 0) > 0)
-    .map((a) => {
-      const hours = (now - Date.parse(a.publishedAt)) / 3_600_000;
-      return { a, score: (a.views ?? 0) / Math.pow(hours + 2, 1.5) };
-    })
-    .sort((x, y) => y.score - x.score);
-
-  if (!ranked.length || (ranked[0].a.views ?? 0) < TRENDING_MIN_VIEWS) return [];
-
-  return ranked.slice(0, limit).map((x) => x.a);
 }
 
 /**

@@ -194,6 +194,9 @@ export const Articles: CollectionConfig = {
     },
     { name: "readingMinutes", type: "number", required: true, min: 1 },
     { name: "featured", type: "checkbox", defaultValue: false, admin: { position: "sidebar" } },
-    { name: "views", type: "number", defaultValue: 0, admin: { position: "sidebar" } },
+    // Nothing writes this any more: the per-view database write was removed in
+    // September 2026 to save the metered database. Hidden rather than deleted
+    // so the column stays and no migration is needed.
+    { name: "views", type: "number", defaultValue: 0, admin: { hidden: true } },
   ],
 };

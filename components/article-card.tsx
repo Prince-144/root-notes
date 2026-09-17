@@ -56,25 +56,3 @@ export function ArticleRow({
     </article>
   );
 }
-
-/** Compact numbered row used in the Trending list. */
-export function TrendingRow({ article, index }: { article: ArticleSummary; index: number }) {
-  return (
-    <li className="group relative flex gap-4 border-b border-line py-4 last:border-0">
-      <span className="font-mono text-sm text-accent/70 tabular-nums">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <div className="min-w-0">
-        <h3 className="text-sm font-medium leading-snug text-fg">
-          <Link href={`/article/${article.slug}`} className="link-underline">
-            <span className="absolute inset-0" aria-hidden />
-            {article.title}
-          </Link>
-        </h3>
-        <div className="mt-1.5 flex items-center gap-3">
-          <MetaChip>{article.categorySlug.toUpperCase()}</MetaChip>
-        </div>
-      </div>
-    </li>
-  );
-}

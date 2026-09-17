@@ -25,7 +25,6 @@ export type ArticleSummary = {
   publishedAt: string; // ISO date
   readingMinutes: number;
   featured?: boolean;
-  views?: number;
   coverImageUrl?: string;
   /**
    * Description of the cover image. Only present for uploaded covers, where

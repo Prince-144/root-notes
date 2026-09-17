@@ -25,17 +25,18 @@ Requires `DATABASE_URI` (Postgres connection string) and `PAYLOAD_SECRET` in `.e
 
 ### Content layer is Payload CMS on Postgres
 
-[lib/articles.ts](lib/articles.ts) wraps Payload's local API and exposes the same read functions the rest of the app calls: `getArticles(limit?)`, `getFeatured()`, `getByCategory(slug)`, `getBySlug(slug)`, `getRelated(article, limit?)`, `getTrending(limit)`, `formatDate(iso)`. All of these except `formatDate` are now `async` (they weren't in the Step-1/2 in-memory version) — every call site awaits them. The `articles` collection is defined in [collections/Articles.ts](collections/Articles.ts); its `body` field stores raw MDX source (a `code` field, not Payload richText) specifically so `article.body` keeps flowing straight into `<MDXRemote source={article.body} />` unchanged. When adding content-related functionality, add it here rather than calling Payload's local API directly from components or pages.
+[lib/articles.ts](lib/articles.ts) wraps Payload's local API and exposes the same read functions the rest of the app calls: `getArticles(limit?)`, `getFeatured()`, `getByCategory(slug)`, `getBySlug(slug)`, `getRelated(article, limit?)`, `formatDate(iso)`. All of these except `formatDate` are now `async` (they weren't in the Step-1/2 in-memory version) — every call site awaits them. The `articles` collection is defined in [collections/Articles.ts](collections/Articles.ts); its `body` field stores raw MDX source (a `code` field, not Payload richText) specifically so `article.body` keeps flowing straight into `<MDXRemote source={article.body} />` unchanged. When adding content-related functionality, add it here rather than calling Payload's local API directly from components or pages.
 
 ### Database traffic is metered — keep it small
 
-In September 2026 the Neon project was cut off for exceeding its monthly data-transfer quota: the admin panel, `/search`, `/rss.xml` and every `/api` route returned 500 until the database was replaced. Egress is billed per byte leaving the database, so the rules are about not moving rows needlessly:
+In September 2026 the Neon project was cut off for exceeding its monthly data-transfer quota: the admin panel, `/search`, `/rss.xml` and every `/api` route returned 500 until the quota reset on 1 October. Egress is billed per byte leaving the database, so the rules are about not moving rows needlessly:
 
 - **Builds share one article list per worker.** `lib/articles.ts` memoizes the full list across renders only when `process.env.NEXT_PHASE === "phase-production-build"`. Before this, each of ~290 article pages, ~290 OG images and every tag, category and pagination page queried the whole list separately — about a thousand full-list queries per deploy. Never extend the memo to runtime: revalidated pages are cached indefinitely, and a stale list would bake a newly published article out of them.
 - **List views never select `body`** (`LIST_SELECT`). Anything that only needs a headline uses `getSummaryBySlug`, not `getBySlug`.
 - **`scripts/check-mdx.ts` checks drafts and recent changes by default**; pass slugs, or `--all` for a full sweep.
 - **Batch deploys.** Every deploy re-renders the whole site against the database. Several content edits can go out in one deploy.
 - **Scripts that scan many articles select only the fields they read** — never full documents in a loop.
+- **Readers never write to the database.** The per-article view counter (a POST and an `UPDATE` on every article open) was removed in September 2026, along with the Trending list it fed; readership comes from Google Analytics and Vercel Web Analytics. The `views` column is still there, hidden in the admin, so nothing needed a migration. Don't bring back a per-request write.
 
 ### Images inside article bodies
 
@@ -47,8 +48,6 @@ An inline image is plain markdown in the body: `![alt](url "Optional caption")`.
 ### Admin panel lives in its own route group
 
 The Payload admin UI needs its own `<html>` document, so the app is split into two route groups under `app/`: `(frontend)/` holds the actual site (former root `layout.tsx`, `page.tsx`, `globals.css`, `article/`, `category/` — moved here unchanged, URLs unaffected since route groups don't appear in the path), and `(payload)/` holds the admin panel (`/admin`) plus the REST (`/api/[...slug]`) and GraphQL (`/api/graphql`) routes. `payload.config.ts` lives at the repo root; `@payload-config` (see `tsconfig.json` paths) points to it. `next.config.ts` is wrapped in `withPayload(...)`.
-
-`getTrending` ranks by Hacker News-style gravity: `score = views / (hours_since_publish + 2)^1.5` — recency beats raw popularity.
 
 ### Site identity is centralized in site.config.ts
 

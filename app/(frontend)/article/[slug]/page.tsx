@@ -8,7 +8,6 @@ import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { RelatedPosts } from "@/components/related-posts";
 import { CategoryChip, MetaChip } from "@/components/tag-chip";
 import { BackButton } from "@/components/back-button";
-import { ViewTracker } from "@/components/view-tracker";
 import { formatDate, getArticles, getBySlug, getRelated, tagToSlug } from "@/lib/articles";
 import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
@@ -119,7 +118,6 @@ export default async function ArticlePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbLd) }}
       />
-      <ViewTracker slug={article.slug} />
       <div className="mb-4">
         <BackButton />
       </div>

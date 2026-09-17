@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/static-page";
-import { ResetConsentButton } from "@/components/cookie-consent";
+import { AnalyticsOptOut } from "@/components/google-analytics";
 import { siteConfig } from "@/site.config";
 
 export const metadata: Metadata = {
@@ -14,27 +14,50 @@ export default function CookiesPage() {
     <StaticPage promptCmd="cat cookie-policy.md" title="cookie-policy">
       <h1>Cookie Policy</h1>
       <p>
-        <em>Last updated: 19 August 2026</em>
+        <em>Last updated: 17 September 2026</em>
       </p>
 
       <p>
-        Short version: {siteConfig.name} asks before loading Google Analytics, and loads
-        nothing if you say no. Two counters run either way, neither of which uses cookies
-        or identifies you. We don&apos;t run advertising cookies or sell data to anyone.
+        Short version: {siteConfig.name} uses Google Analytics, which sets cookies, to see
+        which articles get read, and you can turn it off for your browser on this page.
+        Vercel Web Analytics counts page views as well, without cookies. We don&apos;t run
+        advertising cookies or sell data to anyone.
       </p>
 
-      <h2>Your choice</h2>
+      <h2>Google Analytics</h2>
       <p>
-        On your first visit a banner asks whether we may load Google Analytics. Until you
-        answer, it is not loaded and no analytics cookies are set. Declining is a real
-        no — the script never runs — and the site behaves identically either way.
+        We use Google Analytics (GA4) to understand which articles get read and how visitors
+        find the site — page views, referrers, approximate location (country/city level), and
+        device type. It loads on every page for every visitor who has not turned it off, and
+        Google sets its own cookies (<code>_ga</code>, <code>_ga_*</code>) to recognise your
+        browser from one visit to the next; see{" "}
+        <a href="https://policies.google.com/technologies/cookies" target="_blank" rel="noreferrer">
+          Google&apos;s cookie policy
+        </a>{" "}
+        for what they store and how long. We don&apos;t see or store your individual browsing
+        activity ourselves — Google Analytics only gives us aggregated numbers.
+      </p>
+
+      <h2>Turning it off</h2>
+      <p>
+        This switch turns Google Analytics off in this browser. It deletes the cookies Google
+        Analytics has already set here and stops the script loading on any later page. The
+        choice is kept in your browser&apos;s local storage, not in a cookie, so it never
+        leaves your device; clearing this site&apos;s data undoes it.
       </p>
       <p>
-        Your answer is stored in your browser&apos;s local storage, not in a cookie, so it
-        never leaves your device. To change it:
+        <AnalyticsOptOut />
       </p>
       <p>
-        <ResetConsentButton />
+        If you pressed Decline on the banner this site used to show, that choice still stands
+        in the browser you made it in, and Google Analytics does not load there. To block it
+        on every site rather than just this one, a browser extension like{" "}
+        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noreferrer">
+          Google Analytics Opt-out
+        </a>{" "}
+        or blocking <code>*.google-analytics.com</code> and{" "}
+        <code>*.googletagmanager.com</code> in your browser&apos;s tracking-protection
+        settings will do it.
       </p>
 
       <h2>Theme preference</h2>
@@ -49,55 +72,22 @@ export default function CookiesPage() {
         applies to logged-in site administrators, not regular visitors.
       </p>
 
-      <h2>Google Analytics</h2>
-      <p>
-        We use Google Analytics (GA4) to understand which articles get read and how visitors
-        find the site — page views, referrers, approximate location (country/city level), and
-        device type. Google sets its own cookies (<code>_ga</code>, <code>_ga_*</code>) to do
-        this; see{" "}
-        <a href="https://policies.google.com/technologies/cookies" target="_blank" rel="noreferrer">
-          Google&apos;s cookie policy
-        </a>{" "}
-        for what they store and how long. We don&apos;t see or store your individual browsing
-        activity ourselves — Google Analytics only gives us aggregated numbers.
-      </p>
-      <p>
-        This only applies if you accepted the banner. If you declined, or have not answered,
-        none of it runs. Should you want belt and braces on top of declining, a browser
-        extension like{" "}
-        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noreferrer">
-          Google Analytics Opt-out
-        </a>{" "}
-        or blocking <code>*.google-analytics.com</code> and{" "}
-        <code>*.googletagmanager.com</code> in your browser&apos;s tracking-protection
-        settings will do it.
-      </p>
-
       <h2>Counting without cookies</h2>
       <p>
-        Two things count page views whether or not you accept the banner, because neither
-        sets a cookie, stores an identifier that survives your visit, or follows you to any
-        other site. There is nothing about you in either of them to consent to.
-      </p>
-      <p>
-        The first is our own view counter. When you open an article, your browser tells our
-        server that this article was opened — nothing else. It is what the &ldquo;views&rdquo;
-        number on the site comes from.
-      </p>
-      <p>
-        The second is{" "}
         <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noreferrer">
           Vercel Web Analytics
         </a>
-        , run by the company that hosts this site. It records the page, the referring site
-        and a country-level location, and it exists because Google Analytics only ever sees
-        readers who pressed Accept, which makes those numbers an unreliable picture of who
-        actually reads this.
+        , run by the company that hosts this site, counts page views too. It sets no cookie,
+        stores no identifier that survives your visit and does not follow you to any other
+        site; it records the page, the referring site and a country-level location. It is
+        there because ad blockers and browsers&apos; tracking protection stop Google Analytics
+        for some readers, which leaves Google&apos;s numbers short.
       </p>
       <p>
-        Both are served from this site&apos;s own domain rather than a third-party one, so
-        a blocklist that works by host will not catch them. Turning JavaScript off for this
-        site stops both, and every article remains readable without it.
+        It is served from this site&apos;s own domain rather than a third-party one, so a
+        blocklist that works by host will not catch it, and the switch above does not turn it
+        off. Turning JavaScript off for this site stops it, and every article remains readable
+        without it.
       </p>
 
       <h2>No advertising cookies</h2>

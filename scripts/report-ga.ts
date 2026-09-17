@@ -12,12 +12,13 @@
  * Settings. It is NOT the G-XXXXXXX measurement id in site.config.ts: that one
  * is write-only, it sends events and cannot read them back.
  *
- * READ THE NUMBERS WITH THIS IN MIND: components/cookie-consent.tsx does not
- * load the GA tag until a reader presses Accept, so everything below counts
- * consenting readers only and undercounts real traffic by an unknown margin.
- * scripts/report-views.ts and Vercel Web Analytics both count everyone, and are
- * the right source for "how many people read this". GA is here for the
- * dimensions those two do not have — sources, geography, devices, engagement.
+ * READ THE NUMBERS WITH THIS IN MIND: components/google-analytics.tsx loads
+ * the tag for every reader, but ad blockers, browser tracking protection and
+ * the opt-out on /cookies all stop it, so these counts run below real traffic.
+ * Vercel Web Analytics is served from the site's own domain, which host
+ * blocklists miss, and is the better source for "how many people read this".
+ * GA is here for what that does not have — sources, geography, devices,
+ * engagement.
  */
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
@@ -138,8 +139,8 @@ table(
 );
 
 console.log(`
-Consenting readers only — the GA tag does not load until someone presses
-Accept on the banner. For total readership use scripts/report-views.ts or
-Vercel Web Analytics, both of which count everybody.
+Readers who block Google Analytics — ad blockers, tracking protection, the
+opt-out on /cookies — are missing from these numbers. For total readership
+use Vercel Web Analytics.
 `);
 process.exit(0);

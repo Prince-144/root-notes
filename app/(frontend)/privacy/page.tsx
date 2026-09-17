@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <StaticPage promptCmd="cat privacy-policy.md" title="privacy-policy">
       <h1>Privacy Policy</h1>
       <p>
-        <em>Last updated: 19 August 2026</em>
+        <em>Last updated: 17 September 2026</em>
       </p>
 
       <p>
@@ -27,13 +27,14 @@ export default function PrivacyPage() {
         confirmation timestamp.
       </p>
       <p>
-        Separately, three things count traffic, and they do not see the same people. Google
-        Analytics collects aggregate, non-identifying data (page views, referrers,
-        approximate location, device type) but only from visitors who accepted the banner.
-        Vercel Web Analytics and our own article view counter run for everyone, set no
-        cookie and store no identifier that outlives the visit. Our{" "}
-        <a href="/cookies">Cookie Policy</a> sets out what each records and how to stop
-        them. We don&apos;t run ad tracking or any other visitor-tracking script.
+        Separately, two things count traffic. Google Analytics records page views,
+        referrers, approximate location and device type for every visitor who has not
+        turned it off, using cookies that give your browser a random identifier; we only
+        ever see the aggregated numbers. Vercel Web Analytics counts page views too, sets no
+        cookie and stores no identifier that outlives the visit. Our{" "}
+        <a href="/cookies">Cookie Policy</a> sets out what each records and how to turn
+        Google Analytics off. We don&apos;t run ad tracking or any other visitor-tracking
+        script.
       </p>
 
       <h2>How we use it</h2>
@@ -59,8 +60,9 @@ export default function PrivacyPage() {
           which records page views without cookies or a stored identifier.
         </li>
         <li>
-          <strong>Google Analytics</strong> — collects aggregate traffic data, per
-          Google&apos;s own privacy policy, and only from visitors who accepted the banner.
+          <strong>Google Analytics</strong> — collects traffic data using cookies, per
+          Google&apos;s own privacy policy, from every visitor who has not turned it off. We
+          see only aggregated reports.
         </li>
       </ul>
 
