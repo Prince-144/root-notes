@@ -2,6 +2,7 @@
  * Turns a published article into an Instagram carousel.
  *
  *   npx tsx --env-file=.env.local scripts/instagram-carousel.ts <slug>
+ *   npx tsx scripts/instagram-carousel.ts <slug> --live
  *
  * Writes 1080x1350 PNGs and a caption.txt into instagram/<slug>/. Posting is
  * manual: the Content Publishing API needs a Facebook Page, a Meta app and an
@@ -11,11 +12,14 @@
  * Slides come from the article's own `##` headings and the first paragraph
  * under each, so the carousel follows the piece rather than being written
  * twice and drifting from it.
+ *
+ * `--live` reads the published page instead of the database, and needs no
+ * credentials. The database is metered and spent a fortnight suspended in
+ * September 2026, while every published article stayed on the site as
+ * prerendered HTML — which is all a carousel needs.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { siteConfig } from "@/site.config";
 
 const W = 1080;
@@ -455,21 +459,140 @@ function sections(body: string): Section[] {
   return out;
 }
 
-const slug = process.argv[2];
+/** Everything a carousel reads from an article, whatever it was read from. */
+type CarouselArticle = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  categorySlug: string;
+  tags: string[];
+  publishedAt: string;
+  coverImageUrl?: string;
+  body: string;
+};
+
+/** Decodes the entities React writes into text nodes. */
+function decode(text: string): string {
+  return text
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    // Last, or an escaped entity like &amp;lt; would decode twice.
+    .replace(/&amp;/g, "&");
+}
+
+/**
+ * The rendered body, turned back into the markdown the slide picker expects.
+ *
+ * Only block structure survives, because that is all the picker reads:
+ * headings, paragraphs, quotes, and enough of a marker on lists and tables for
+ * them to be skipped. Bold is kept because the house style puts the figure
+ * that matters inside it.
+ */
+function htmlToMarkdown(html: string): string {
+  const text = html
+    .replace(/<figure[\s\S]*?<\/figure>/g, "")
+    .replace(/<table[\s\S]*?<\/table>/g, "\n\n| table\n\n")
+    .replace(/<\/?(strong|b)>/g, "**")
+    .replace(/<\/?(em|i)>/g, "*")
+    .replace(/<h2[^>]*>/g, "\n\n## ")
+    .replace(/<h3[^>]*>/g, "\n\n### ")
+    .replace(/<blockquote[^>]*>/g, "\n\n> ")
+    .replace(/<li[^>]*>/g, "\n- ")
+    .replace(/<\/(h2|h3|p|blockquote|li|ul|ol)>/g, "\n\n")
+    .replace(/<[^>]+>/g, "");
+
+  return decode(text)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * The contents of the element whose opening tag contains `at`.
+ *
+ * The tag name is read from the page rather than assumed: the body is an
+ * <article>, and counting </div> instead ran past the end of it and swept the
+ * related-posts list into the carousel as if it were a section of the piece.
+ */
+function elementContent(html: string, at: number): string {
+  const name = html.slice(html.lastIndexOf("<", at) + 1).match(/^[a-zA-Z][a-zA-Z0-9-]*/)?.[0];
+  if (!name) throw new Error("article body has no opening tag");
+
+  const start = html.indexOf(">", at) + 1;
+  const tags = new RegExp(`<(/?)${name}\\b`, "g");
+  tags.lastIndex = start;
+  let depth = 1;
+
+  for (let tag = tags.exec(html); tag; tag = tags.exec(html)) {
+    depth += tag[1] ? -1 : 1;
+    if (depth === 0) return html.slice(start, tag.index);
+  }
+  throw new Error("article body is not closed");
+}
+
+/**
+ * Reads the article from its published page.
+ *
+ * The page carries its own NewsArticle and BreadcrumbList markup, so the
+ * title, standfirst, date, cover, tags and category come from structured data
+ * rather than from scraped layout, and only the body has to be converted.
+ */
+async function fromLiveSite(slug: string): Promise<CarouselArticle> {
+  const res = await fetch(`${siteConfig.url}/article/${slug}`);
+  if (!res.ok) throw new Error(`article page ${res.status} for ${slug}`);
+  const html = await res.text();
+
+  const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  const parsed = scripts.map((s) => JSON.parse(s[1]) as Record<string, any>);
+  const news = parsed.find((x) => x["@type"] === "NewsArticle");
+  const crumbs = parsed.find((x) => x["@type"] === "BreadcrumbList");
+  if (!news) throw new Error(`no article markup on the page for ${slug}`);
+
+  const body = html.indexOf('class="article-body');
+  if (body < 0) throw new Error(`no article body on the page for ${slug}`);
+
+  const categoryUrl: string = crumbs?.itemListElement?.[1]?.item ?? "";
+
+  return {
+    slug,
+    title: news.headline,
+    excerpt: news.description,
+    publishedAt: news.datePublished,
+    coverImageUrl: news.image?.[0],
+    tags: news.keywords ? String(news.keywords).split(", ").filter(Boolean) : [],
+    categorySlug: categoryUrl.split("/").pop() || "security",
+    body: htmlToMarkdown(elementContent(html, body)),
+  };
+}
+
+/** Reads the article from Postgres, which is the only way to see a draft. */
+async function fromDatabase(slug: string): Promise<CarouselArticle> {
+  const { getPayload } = await import("payload");
+  const { default: config } = await import("@payload-config");
+
+  const payload = await getPayload({ config });
+  const { docs } = await payload.find({
+    collection: "articles",
+    where: { slug: { equals: slug } },
+    limit: 1,
+    depth: 0,
+  });
+
+  return docs[0] as unknown as CarouselArticle;
+}
+
+const live = process.argv.includes("--live");
+const slug = process.argv.slice(2).find((a) => !a.startsWith("--"));
 if (!slug) {
-  console.error("usage: instagram-carousel.ts <article-slug>");
+  console.error("usage: instagram-carousel.ts <article-slug> [--live]");
   process.exit(1);
 }
 
-const payload = await getPayload({ config });
-const { docs } = await payload.find({
-  collection: "articles",
-  where: { slug: { equals: slug } },
-  limit: 1,
-  depth: 0,
-});
-
-const article = docs[0] as any;
+const article = live ? await fromLiveSite(slug) : await fromDatabase(slug);
 if (!article) {
   console.error(`no article with slug "${slug}"`);
   process.exit(1);
