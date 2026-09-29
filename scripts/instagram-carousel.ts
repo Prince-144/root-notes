@@ -247,6 +247,29 @@ ${FOOTER}
 </svg>`;
 }
 
+/** Body lines that fit on a slide. More than this and the footer is crowded. */
+const MAX_BODY_LINES = 11;
+
+/**
+ * Wraps the body, and if it runs past the slide, drops whole sentences.
+ *
+ * Taking the first eleven lines cut inside a sentence: a card about the
+ * credential handoff ended on "but the data does pass", with "through
+ * temporary storage" gone and nothing to signal it. The paragraph scorer
+ * already penalises anything long enough to reach here; this is the guarantee
+ * for the ones that win their section anyway.
+ */
+function fitBody(text: string, size: number, width: number): string[] {
+  const lines = wrap(text, size, width, 0.52);
+  if (lines.length <= MAX_BODY_LINES) return lines;
+
+  const kept = lines.slice(0, MAX_BODY_LINES).join(" ").trimEnd();
+  if (/[.!?]["']?$/.test(kept)) return lines.slice(0, MAX_BODY_LINES);
+
+  const end = Math.max(kept.lastIndexOf(". "), kept.lastIndexOf("! "), kept.lastIndexOf("? "));
+  return end > 0 ? wrap(kept.slice(0, end + 1), size, width, 0.52) : lines.slice(0, MAX_BODY_LINES);
+}
+
 function pointSlide(
   index: number,
   total: number,
@@ -260,7 +283,7 @@ function pointSlide(
   const bodyLead = 60;
 
   const headLines = wrap(heading, headSize, W - PAD * 2, 0.55);
-  const bodyLines = wrap(body, bodySize, W - PAD * 2 - (isQuote ? 40 : 0), 0.52).slice(0, 11);
+  const bodyLines = fitBody(body, bodySize, W - PAD * 2 - (isQuote ? 40 : 0));
 
   // Centre the block between the header rule and the footer rule. Text pinned
   // to the top left most of a 1350px slide empty, which reads as unfinished.
@@ -426,10 +449,10 @@ function sections(body: string): Section[] {
       // authenticating, reconstructed) that strand line-ends. 420 is both the
       // measured safe width and the point where lengthScore stops rewarding
       // length, so past it a paragraph is taking risk for no score.
-      // pointSlide draws at most 11 body lines and drops the rest, which cuts
-      // mid-clause with nothing to signal it. Roughly 43 characters fit a line
-      // at the body size, so anything past ~460 will be silently truncated —
-      // penalise it rather than print half a sentence.
+      // pointSlide fits at most 11 body lines and drops whole sentences past
+      // that. Roughly 43 characters fit a line at the body size, so anything
+      // past ~460 loses its last thought — penalise it rather than print a
+      // paragraph with the end missing.
       const overflows = t.length > 420;
 
       return (digits > 0 ? 3 : 0) + lengthScore - (backReference ? 5 : 0) - (overflows ? 4 : 0);
@@ -586,11 +609,15 @@ async function fromDatabase(slug: string): Promise<CarouselArticle> {
 }
 
 const live = process.argv.includes("--live");
-const slug = process.argv.slice(2).find((a) => !a.startsWith("--"));
-if (!slug) {
+const arg = process.argv.slice(2).find((a) => !a.startsWith("--"));
+if (!arg) {
   console.error("usage: instagram-carousel.ts <article-slug> [--live]");
   process.exit(1);
 }
+
+// Assigned after the guard rather than used directly: writeSlide is a function
+// declaration, so the narrowing from the check above does not reach inside it.
+const slug: string = arg;
 
 const article = live ? await fromLiveSite(slug) : await fromDatabase(slug);
 if (!article) {
