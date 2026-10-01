@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <StaticPage promptCmd="cat privacy-policy.md" title="privacy-policy">
       <h1>Privacy Policy</h1>
       <p>
-        <em>Last updated: 17 September 2026</em>
+        <em>Last updated: 1 October 2026</em>
       </p>
 
       <p>
