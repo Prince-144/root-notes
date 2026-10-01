@@ -1,19 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { ArticleRow } from "@/components/article-card";
 import { matchesQuery } from "@/lib/search-match";
 import type { ArticleSummary } from "@/lib/article-types";
 
-export function SearchClient({
-  articles,
-  initialQuery,
-}: {
-  articles: ArticleSummary[];
-  initialQuery: string;
-}) {
-  const [query, setQuery] = useState(initialQuery);
+/**
+ * The q parameter is read here rather than passed in from the page, so that
+ * the page itself has no request-time input and stays prerendered. A link to
+ * /search?q=ransomware still opens with that term in the box; it is filled in
+ * on the client instead of on the server.
+ */
+export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
+  const params = useSearchParams();
+  const [query, setQuery] = useState(params.get("q") ?? "");
   const trimmed = query.trim();
 
   /**

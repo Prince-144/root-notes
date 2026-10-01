@@ -87,15 +87,23 @@ export const Articles: CollectionConfig = {
     ],
     afterDelete: [({ doc }) => revalidateArticlePaths(doc)],
   },
-  // Public reads (the site fetches articles unauthenticated at build/request
-  // time), but write access requires an authenticated admin — without this,
-  // Payload's default is fully open create/update/delete for every collection.
-  // Public read is further scoped to status=published — otherwise draft
-  // content is reachable by anyone querying /api/articles directly, even
-  // though the site's own pages (lib/articles.ts) already filter it out.
-  // Logged-in admins still see everything, drafts included.
+  // Reads require an authenticated admin, and so does everything else —
+  // without this, Payload's default is fully open create, update and delete
+  // for every collection.
+  //
+  // Closing read as well is about the database bill rather than secrecy: the
+  // articles are public on the site, but /api/articles is a query interface
+  // onto the same rows, and one unauthenticated request asking for every
+  // document with depth moves megabytes out of a metered database. Crawlers
+  // find REST endpoints. In September 2026 the project spent a fortnight
+  // suspended for exceeding its transfer quota, and this was one of the open
+  // taps.
+  //
+  // The site is unaffected: every page reads through Payload's Local API
+  // (lib/articles.ts), which runs in-process and bypasses access control, and
+  // the admin panel calls REST as a logged-in user.
   access: {
-    read: ({ req: { user } }) => (user ? true : { status: { equals: "published" } }),
+    read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),

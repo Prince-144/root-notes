@@ -32,15 +32,20 @@ for (const file of files) {
     where: { slug: { in: slugs } },
     limit: slugs.length || 1,
     depth: 0,
-    select: { slug: true, status: true, publishedAt: true },
+    select: { slug: true, status: true, publishedAt: true, updatedAt: true },
   });
 
-  const found = new Map(docs.map((d) => [d.slug as string, d as { status: string }]));
+  const found = new Map(
+    docs.map((d) => [d.slug as string, d as { status: string; updatedAt?: string }]),
+  );
 
   console.log(`\n${file} — ${slugs.length} slugs, ${found.size} already in the database`);
   for (const slug of slugs) {
     const doc = found.get(slug);
-    console.log(`  ${(doc?.status ?? "MISSING").padEnd(9)} ${slug}`);
+    // Last edit included, because a status that changed after insertion is
+    // somebody working in the admin panel rather than a script.
+    const edited = doc?.updatedAt ? new Date(doc.updatedAt).toISOString().slice(0, 19) : "";
+    console.log(`  ${(doc?.status ?? "MISSING").padEnd(9)} ${edited.padEnd(20)} ${slug}`);
   }
 }
 

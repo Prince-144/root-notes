@@ -27,6 +27,17 @@ function escapeXml(value: string): string {
  */
 const FEED_LIMIT = 50;
 
+/**
+ * Built once, not per request.
+ *
+ * Route handlers are served dynamically by default, so every feed reader poll
+ * and every bot asking for the feed was a query against a metered database for
+ * a document that only changes when something is published. The publish hook in
+ * collections/Articles.ts already calls revalidatePath for this path, so the
+ * feed is regenerated when it actually changes.
+ */
+export const dynamic = "force-static";
+
 export async function GET() {
   const articles = (await getArticles()).slice(0, FEED_LIMIT);
 
