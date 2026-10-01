@@ -73,6 +73,11 @@ export default async function ArticlePage({
   const related = await getRelated(article, 6);
   const { older, newer } = await getNeighbours(article.slug);
 
+  // Only the site's own byline has a page behind it; a guest name renders as
+  // text rather than as a link to a route that does not exist.
+  const authorPath =
+    article.author === siteConfig.author ? `/author/${tagToSlug(article.author)}` : null;
+
   const articleUrl = `${siteConfig.url}/article/${article.slug}`;
   const categoryUrl = `${siteConfig.url}/category/${category.slug}`;
 
@@ -94,7 +99,13 @@ export default async function ArticlePage({
     ...(article.coverImageUrl ? { image: [absolute(article.coverImageUrl)] } : {}),
     datePublished: article.publishedAt,
     dateModified: article.updatedAt ?? article.publishedAt,
-    author: { "@type": "Person", name: article.author },
+    // url ties the byline to the author page, which is what turns a name in
+    // the markup into something a search engine can look up.
+    author: {
+      "@type": "Person",
+      name: article.author,
+      ...(authorPath ? { url: `${siteConfig.url}${authorPath}` } : {}),
+    },
     publisher: {
       "@type": "Organization",
       name: siteConfig.name,
@@ -145,7 +156,13 @@ export default async function ArticlePage({
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
           <CategoryChip slug={article.categorySlug} />
-          <MetaChip>{article.author}</MetaChip>
+          {authorPath ? (
+            <Link href={authorPath} className="hover:opacity-70">
+              <MetaChip>{article.author}</MetaChip>
+            </Link>
+          ) : (
+            <MetaChip>{article.author}</MetaChip>
+          )}
           <MetaChip>{formatDate(article.publishedAt)}</MetaChip>
         </div>
       </TerminalWindow>

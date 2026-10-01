@@ -116,6 +116,7 @@ export const footerNav = {
   ],
   Company: [
     { name: "About", href: "/about" },
+    { name: "Editorial Policy", href: "/editorial-policy" },
     { name: "Contact", href: "/contact" },
     { name: "Advertise", href: "/advertise" },
     { name: "Write for us", href: "/contribute" },

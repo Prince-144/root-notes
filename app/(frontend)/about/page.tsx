@@ -28,10 +28,19 @@ export default function AboutPage() {
         We&apos;d rather publish fewer, sharper pieces than chase every headline.
       </p>
 
+      <h2>Who writes it</h2>
+      <p>
+        {siteConfig.name} is written and edited by{" "}
+        <a href="/author/prince-baruwala">{siteConfig.author}</a>, from India. How stories
+        are sourced, quoted and corrected is set out in the{" "}
+        <a href="/editorial-policy">editorial policy</a>.
+      </p>
+
       <h2>Corrections</h2>
       <p>
         If something here is wrong, we want to know. Reach out via the{" "}
-        <a href="/contact">contact page</a> and we&apos;ll fix it.
+        <a href="/contact">contact page</a> and we&apos;ll fix it. Corrections that change
+        what a piece means are noted on the piece itself.
       </p>
     </StaticPage>
   );
