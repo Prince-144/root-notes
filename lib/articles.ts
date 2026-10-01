@@ -267,6 +267,26 @@ export async function getRelated(
 }
 
 /**
+ * The articles published either side of this one.
+ *
+ * Related posts link by subject, which leaves anything with unusual tags in a
+ * corner of the site reachable only through pagination. A date chain reaches
+ * everything: from any article you can walk the whole archive one step at a
+ * time, and so can a crawler. It reads from the list getRelated has already
+ * fetched, so it costs no extra query.
+ */
+export async function getNeighbours(
+  slug: string,
+): Promise<{ older?: ArticleSummary; newer?: ArticleSummary }> {
+  const articles = await getArticles();
+  const index = articles.findIndex((a) => a.slug === slug);
+  if (index === -1) return {};
+
+  // The list is newest first, so the next entry is the older article.
+  return { newer: articles[index - 1], older: articles[index + 1] };
+}
+
+/**
  * Simple substring search across title, excerpt, author, tags and category.
  * Runs against the same cached `getArticles()` list as everything else —
  * fine at this content scale; swap for Postgres full-text (or Meilisearch)

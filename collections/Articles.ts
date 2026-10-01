@@ -21,7 +21,9 @@ function revalidateArticlePaths(doc: { slug?: string; categorySlug?: string }) {
     revalidatePath("/");
     revalidatePath("/search");
     revalidatePath("/sitemap.xml");
+    revalidatePath("/news-sitemap.xml");
     revalidatePath("/rss.xml");
+    revalidatePath("/archive");
     if (doc.slug) revalidatePath(`/article/${doc.slug}`);
     if (doc.categorySlug) revalidatePath(`/category/${doc.categorySlug}`);
   } catch {

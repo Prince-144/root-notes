@@ -107,7 +107,13 @@ export const socialLinks = [
 ] as const;
 
 export const footerNav = {
-  Sections: categories.map((c) => ({ name: c.name, href: `/category/${c.slug}` })),
+  Sections: [
+    ...categories.map((c) => ({ name: c.name, href: `/category/${c.slug}` })),
+    // Linked from every page, because it is the one place every article is a
+    // single click away — for a reader looking for something old, and for a
+    // crawler that would otherwise have to walk the pagination to find it.
+    { name: "Archive", href: "/archive" },
+  ],
   Company: [
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },

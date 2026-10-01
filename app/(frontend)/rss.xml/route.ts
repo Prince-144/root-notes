@@ -1,24 +1,6 @@
 import { getArticles } from "@/lib/articles";
+import { escapeXml } from "@/lib/xml";
 import { siteConfig } from "@/site.config";
-
-function escapeXml(value: string): string {
-  return value.replace(/[<>&'"]/g, (char) => {
-    switch (char) {
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case "&":
-        return "&amp;";
-      case "'":
-        return "&apos;";
-      case '"':
-        return "&quot;";
-      default:
-        return char;
-    }
-  });
-}
 
 /**
  * Number of items in the feed. Readers only ever show the newest handful, and

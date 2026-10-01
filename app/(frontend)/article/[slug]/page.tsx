@@ -8,7 +8,14 @@ import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { RelatedPosts } from "@/components/related-posts";
 import { CategoryChip, MetaChip } from "@/components/tag-chip";
 import { BackButton } from "@/components/back-button";
-import { formatDate, getArticles, getBySlug, getRelated, tagToSlug } from "@/lib/articles";
+import {
+  formatDate,
+  getArticles,
+  getBySlug,
+  getNeighbours,
+  getRelated,
+  tagToSlug,
+} from "@/lib/articles";
 import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
@@ -64,6 +71,7 @@ export default async function ArticlePage({
 
   const category = getCategory(article.categorySlug);
   const related = await getRelated(article, 6);
+  const { older, newer } = await getNeighbours(article.slug);
 
   const articleUrl = `${siteConfig.url}/article/${article.slug}`;
   const categoryUrl = `${siteConfig.url}/category/${category.slug}`;
@@ -192,6 +200,37 @@ export default async function ArticlePage({
       </div>
 
       <RelatedPosts articles={related} />
+
+      {/* A date chain alongside the subject links above. Related posts reach
+          what shares tags; this reaches everything, one step at a time, which
+          is how a reader walks back through a day's coverage and how a crawler
+          finds a piece that nothing else links to. */}
+      {(older || newer) && (
+        <nav
+          aria-label="More articles"
+          className="mx-auto mt-12 grid max-w-content gap-4 border-t border-line pt-6 sm:grid-cols-2"
+        >
+          {older ? (
+            <Link href={`/article/${older.slug}`} className="group block">
+              <span className="label-mono text-fg-subtle">← Older</span>
+              <span className="mt-2 block text-sm leading-snug text-fg group-hover:text-accent">
+                {older.title}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+
+          {newer && (
+            <Link href={`/article/${newer.slug}`} className="group block sm:text-right">
+              <span className="label-mono text-fg-subtle">Newer →</span>
+              <span className="mt-2 block text-sm leading-snug text-fg group-hover:text-accent">
+                {newer.title}
+              </span>
+            </Link>
+          )}
+        </nav>
+      )}
     </div>
   );
 }

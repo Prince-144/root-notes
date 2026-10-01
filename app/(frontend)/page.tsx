@@ -141,14 +141,18 @@ export default async function HomePage() {
 
         <Pagination basePath="/" page={1} totalPages={totalPages} />
 
-        {/* The feed is paged now, so this is the way to reach a specific
-            piece rather than walking back through the archive. */}
-        <Link
-          href="/search"
-          className="mt-6 inline-block font-mono text-sm text-accent transition-opacity hover:opacity-70"
-        >
-          Search all {allArticles.length} articles →
-        </Link>
+        {/* The feed is paged now, so these are the ways to reach a specific
+            piece rather than walking back through it: search for a subject,
+            or the archive for a date. The archive is also what gives a crawler
+            a single hop to every article instead of a chain of page links. */}
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm">
+          <Link href="/search" className="text-accent transition-opacity hover:opacity-70">
+            Search all {allArticles.length} articles →
+          </Link>
+          <Link href="/archive" className="text-accent transition-opacity hover:opacity-70">
+            Browse the archive →
+          </Link>
+        </div>
       </section>
 
       {/* ---------- COVERAGE ----------
