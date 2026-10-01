@@ -5,12 +5,20 @@ const nextConfig: NextConfig = {
   images: {
     // Vercel's image optimizer returns 402 once the plan's monthly quota of
     // source images is used up, and every cover on the site breaks at once —
-    // which is what happened on 10 September 2026. Serving the source URLs
-    // directly costs nothing and cannot run out. Unsplash covers already
-    // carry w/h/q parameters so they arrive pre-sized; Apple newsroom assets
-    // are the only ones served larger than they are displayed.
-    unoptimized: true,
-    formats: ["image/avif", "image/webp"],
+    // which is what happened on 10 September 2026. A custom loader avoids it
+    // entirely: next/image calls lib/image-loader.ts for each candidate width
+    // and emits a srcset of URLs the browser fetches directly, so there is no
+    // optimization service in the path and no quota to exhaust.
+    //
+    // This replaces `unoptimized: true`, which shipped the 1600px source to a
+    // 112px thumbnail. The loader asks Unsplash for the width the layout uses.
+    loader: "custom",
+    loaderFile: "./lib/image-loader.ts",
+    // Stops the srcset advertising widths no cover has. The loader caps the
+    // request at 1600 anyway; without this the markup still listed 2048w and
+    // 3840w candidates, which is a browser being told to prefer a file that
+    // does not exist at that size.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },

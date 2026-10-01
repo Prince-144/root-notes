@@ -13,6 +13,7 @@ import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
+import { searchTitle } from "@/lib/seo-title";
 import { articleMdxComponents } from "@/components/mdx-components";
 
 export async function generateStaticParams() {
@@ -30,7 +31,9 @@ export async function generateMetadata({
   if (!article) return {};
 
   return {
-    title: article.title,
+    // The headline stays on the page and on the social cards; the title tag
+    // leads with the identifier people search for. See lib/seo-title.ts.
+    title: searchTitle(article),
     description: article.excerpt,
     alternates: { canonical: `/article/${article.slug}` },
     openGraph: {
