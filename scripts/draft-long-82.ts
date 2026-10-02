@@ -64,9 +64,9 @@ On **1 October** it published the two things that make this worth reading past t
 
 ## How DIVD decided it was not a person
 
-The claim travelling fastest is that an autonomous AI agent did this. DIVD's evidence for that is behavioural, and it is worth being precise about what it is and is not.
+The claim travelling fastest is that an autonomous AI agent did this. DIVD's evidence for that is not a signature, a tool or a confession. It is how the intrusion read in the logs, and it is worth being precise about what that does and does not establish.
 
-It is not a signature, a tool or a confession. It is how the intrusion read in the logs. DIVD published two redacted screenshots showing that the attacker's scripts carried notes in which the agent justifies its own actions — explaining that what it is doing is fine and, in its words, "really not phishing". People writing an intrusion script do not argue with themselves in the comments.
+On 26 September DIVD published two redacted screenshots from its logs. The attacker's scripts carry notes in which the agent justifies its own actions, explaining that what it is doing is fine and, in its words, "really not phishing". People writing an intrusion script do not argue with themselves in the comments.
 
 Around that sit three more observations. The operator decided each next step itself, immediately, with no pause for a human to read anything. The attack was, in DIVD's phrasing, "loud and very messy" — at one point polluting its own interception attempt with password spraying, which is the sort of self-defeating overlap a checklist produces and an operator notices. And the commentary that gave it away also helped: DIVD says the overexplaining made its reverse engineering considerably easier.
 
@@ -90,9 +90,9 @@ That distinction matters for anyone deciding how urgent this is. An upgrade that
 
 The reason this particular victim is more than an irony is in the inventory DIVD published of its own data.
 
-A coordinated disclosure body holds, by the nature of the work, lists of vulnerable systems, the fingerprints used to identify them, de-weaponised proof-of-concept code, proof-of-concept attacks, unreleased vulnerabilities and leaked credential dumps. DIVD lists all of it. Against its CSIRT ticket system — the mailbox where csirt@divd.nl conversations land, and where it says it is still working out how much of that material sits — the status reads: signs of compromise of the system.
+A coordinated disclosure body holds, by the nature of the work, lists of vulnerable systems, the fingerprints that identify them, de-weaponised proof-of-concept code, unreleased vulnerabilities and leaked credential dumps. The overview DIVD published on 1 October lists all of it, and against its own CSIRT ticket system the status reads: signs of compromise of the system.
 
-What it has confirmed left the building is narrower. Volunteer data: DIVD email addresses, possibly contact details. Which volunteers, and exactly what, is still open. The consequence it names is impersonation — it is now easier for someone to pose as a DIVD volunteer, and the organisation is asking anyone who gets a message that feels off to check with it first.
+Confirmed as gone is narrower: volunteer data, meaning DIVD email addresses and possibly contact details. Which volunteers and exactly what is still open. The consequence DIVD names is impersonation, and it asks anyone who gets a message that feels off to check with it first. How much of the rest sat in the ticket system is something it says it is still working out.
 
 Network segmentation and the response after detection are what kept this from going further. DIVD says some damage was already done, that it is still finding signs of compromise, and that it assumes breach until it can prove otherwise.
 
