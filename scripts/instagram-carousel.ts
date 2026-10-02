@@ -437,10 +437,25 @@ function sections(body: string): Section[] {
       // "Here it is a sentence typed to an assistant" is pointing at the
       // example in the paragraph above it, and on a slide there is nothing
       // for it to point at.
-      const backReference =
+      const opensOnBackReference =
         /^(that|this|these|those|it|they|such|both|neither|and|but|so|because|which|then|also|again|instead|here)\b/i.test(
           t,
         );
+
+      // The same fragment can sit a few words in rather than at the start.
+      // "What sits behind that is worse than a generic server" opens a slide
+      // by pointing at a paragraph the reader cannot see. Only a demonstrative
+      // standing in for a noun counts: it has to follow a preposition and be
+      // followed by a verb or a clause end, so the determiner in "on this
+      // class of device" and the relative in "a rule that quietly copies" are
+      // both left alone. First sentence only — a later one points backwards
+      // within the slide, where the thing it points at is on screen.
+      const danglingPronoun =
+        /\b(?:behind|after|before|of|from|with|in|on|about|like|than|beyond|against|under|despite|around|into|onto|through)\s+(?:that|this|these|those)(?=\s*[,.;:]|\s+(?:is|was|are|were|means|meant|does|did|has|have|had|will|would|can|could|makes|made)\b)/i.test(
+          t.split(/(?<=\.)\s/)[0] ?? "",
+        );
+
+      const backReference = opensOnBackReference || danglingPronoun;
 
       // 460 was too generous. A 455-character paragraph on the KEV batch piece
       // still lost its last two words — "Both ran, failed, and" with
@@ -455,7 +470,18 @@ function sections(body: string): Section[] {
       // paragraph with the end missing.
       const overflows = t.length > 420;
 
-      return (digits > 0 ? 3 : 0) + lengthScore - (backReference ? 5 : 0) - (overflows ? 4 : 0);
+      // A section's first paragraph is the one written to follow a heading,
+      // so it is the one that still reads as an opening once it is lifted
+      // onto a slide. Not enough to take it automatically — the framing line
+      // this scorer exists to skip still loses to the substance after it —
+      // only enough to win where the later paragraph is longer and no better.
+      // The FortiMail piece put "Fortinet's workarounds say the rest" on a
+      // slide over the paragraph that said what the appliance is, on length.
+      const opens = p === eligible[0] ? 0.8 : 0;
+
+      return (
+        (digits > 0 ? 3 : 0) + lengthScore + opens - (backReference ? 5 : 0) - (overflows ? 4 : 0)
+      );
     };
 
     const prose = eligible.slice().sort((a, b) => score(b) - score(a))[0];
