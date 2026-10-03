@@ -4,6 +4,24 @@ import { categories, siteConfig } from "@/site.config";
 import { PAGE_SIZE } from "@/lib/pagination";
 
 /**
+ * Half an hour, because publishing does not reach this route.
+ *
+ * The afterChange hook calls revalidatePath("/sitemap.xml") along with every
+ * other path, and the news sitemap beside it picks that up within seconds.
+ * This one does not: it is a metadata route rather than a route handler we
+ * wrote, and in practice the invalidation misses it, so the file only changed
+ * when a deploy rebuilt it. An article published between deploys was in the
+ * news sitemap, the feed, the archive and the home page, and absent from the
+ * one file Search Console reads for coverage.
+ *
+ * A timer sidesteps the question of why. The cost is bounded: this regenerates
+ * at most once per half hour, and only when something actually requests the
+ * file, which is crawlers a handful of times a day — not a load worth putting
+ * on a metered database for a faster answer.
+ */
+export const revalidate = 1800;
+
+/**
  * Pages 2..n of a listing. Page one is listed separately under its own URL,
  * so this deliberately starts at two rather than emitting a duplicate.
  *
