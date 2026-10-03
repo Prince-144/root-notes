@@ -27,7 +27,7 @@
  *
  * Covers checked at full 1600x900 and against every cover in the database:
  *   - Agents: openai.com/about open in a browser, the company's own page.
- *   - iCloud: a macOS dock with the Mail icon carrying unread messages.
+ *   - iCloud: the Mail icon with its unread badge, filling the frame.
  *   - NetScaler: a rack of appliances in a dark room.
  *   - Microsoft: the Microsoft sign on the side of a building.
  *
@@ -143,7 +143,7 @@ The context around it is OpenAI's own. In late August the company acknowledged t
       "parser-differential",
     ],
     readingMinutes: 8,
-    coverImageUrl: `https://images.unsplash.com/photo-1563762270340-3f5fde3243cd${P}`,
+    coverImageUrl: `https://images.unsplash.com/photo-1556204976-d25efd967cba${P}`,
     body: `On **1 October 2026**, **SEC Consult** published the technical account of two flaws its researcher **Timo Longin** found in **Apple's iCloud** mail infrastructure. With a free iCloud account, an attacker could send mail that appeared to come from any address at **icloud.com** — and the message passed **SPF**, **DKIM** and **DMARC** on the way out.
 
 Apple paid a **15,000 dollar** bounty. The first report went in on **21 May 2024**. The last fix landed in **December 2025**.
