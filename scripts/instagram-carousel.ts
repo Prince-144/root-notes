@@ -455,7 +455,17 @@ function sections(body: string): Section[] {
           t.split(/(?<=\.)\s/)[0] ?? "",
         );
 
-      const backReference = opensOnBackReference || danglingPronoun;
+      // A position in a list the slide does not contain. "The second is
+      // coverage" is a fragment on its own card, because the first is in a
+      // paragraph the reader never sees — and so is the sentence that said
+      // there were two of them. Same failure as the demonstratives above,
+      // counted separately because the opening word is innocent.
+      const ordinalOpener =
+        /^(?:the\s+(?:first|second|third|fourth|fifth|last|other|former|latter)\b|another\b|secondly\b|thirdly\b|finally\b|one\s+more\b)/i.test(
+          t,
+        );
+
+      const backReference = opensOnBackReference || danglingPronoun || ordinalOpener;
 
       // 460 was too generous. A 455-character paragraph on the KEV batch piece
       // still lost its last two words — "Both ran, failed, and" with
