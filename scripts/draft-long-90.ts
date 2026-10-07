@@ -99,7 +99,7 @@ For a vendor, 247 fixed bugs is an unambiguously good release. For everyone down
 
 Vulnerability feeds, scanners and compliance processes consume CVEs at whatever rate they are produced, and the people triaging them are the same number of people as last year. A tenfold increase in published flaws with no increase in triage capacity means prioritisation stops being a discipline and starts being a lottery — and the thing most likely to be missed is the ordinary high-severity bug buried under 200 others.
 
-One small number says the rest. The largest bounty listed in this release is **5,000 dollars**. When finding a bug was expensive, it was worth a great deal. The price is a measure of scarcity, and scarcity is what changed.
+The largest bounty listed in this release is **5,000 dollars**. When finding a bug was expensive and rare, it was worth a great deal more than that. A price is a measure of scarcity, and scarcity is the thing that changed.
 
 ## What to do
 
