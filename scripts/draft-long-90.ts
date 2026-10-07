@@ -24,7 +24,7 @@
  *   - Chrome: the browser's own listing, which is the product being patched.
  *   - Handlebars: a JavaScript project with its lockfile open, which is where
  *     a dependency like this actually lives.
- *   - Atlassian: a development team at work, whose tools these are.
+ *   - Atlassian: a developer screen, which is what these servers hold and serve.
  *
  * No backticks, angle brackets or braces in the bodies.
  */
@@ -214,7 +214,7 @@ With proof-of-concept code public, the time to find out is now rather than after
       "file-disclosure",
     ],
     readingMinutes: 6,
-    coverImageUrl: `https://images.unsplash.com/photo-1622258415402-d6f597973b03${P}`,
+    coverImageUrl: `https://images.unsplash.com/photo-1489875347897-49f64b51c1f8${P}`,
     body: `**Atlassian** published an advisory on **5 October 2026** for **CVE-2026-21589**, an arbitrary file access flaw scored **9.3**. An unauthenticated attacker can read specific files inside the web application root directory.
 
 It affects **all versions** of eight Data Center products: **Bitbucket**, **Confluence**, **Jira Service Management**, **Jira Software**, **Bamboo**, **Crowd**, **Crucible** and **Fisheye**.
