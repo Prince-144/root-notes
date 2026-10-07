@@ -446,7 +446,7 @@ async function notifyAdmin(
 
   try {
     const resend = new Resend(apiKey);
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
       to,
       subject: `Draft ready for review: ${article.title}`,
@@ -462,7 +462,16 @@ async function notifyAdmin(
         <ul style="color:#888;font-size:12px;line-height:1.6">${sourcesHtml}</ul>
       </div>`,
     });
-    console.log(`[generator] notified ${to} about ${slug}`);
+    if (error) {
+      // Resend resolves with an error rather than throwing, so the catch
+      // below never sees a rejected send. Logging success regardless is how
+      // the newsletter went two months without anyone noticing it was broken.
+      console.error(
+        `[generator] notification to ${to} rejected: ${error.name} ${error.statusCode ?? ""} ${error.message}`,
+      );
+    } else {
+      console.log(`[generator] notified ${to} about ${slug}`);
+    }
   } catch (err) {
     console.error("[generator] notification failed (draft was still saved):", err);
   }

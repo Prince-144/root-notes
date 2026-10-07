@@ -10,6 +10,34 @@ function resendClient(): Resend | null {
   return apiKey ? new Resend(apiKey) : null;
 }
 
+/**
+ * Sends, and says whether it actually sent.
+ *
+ * resend.emails.send() does not throw when the API rejects a message — it
+ * resolves with { data: null, error }. Every call site here used to await it
+ * and discard the result, so a rejected send was indistinguishable from a
+ * delivered one: subscribers got "Check your inbox to confirm", the logs said
+ * nothing, and not one of the six addresses in the table had confirmed since
+ * August because none of them had ever received the email.
+ *
+ * The failure that was hiding behind it: the sender was onboarding@resend.dev,
+ * Resend's shared testing address, which may only send to the account owner
+ * — so every other recipient was rejected with a validation error.
+ */
+async function send(
+  resend: Resend,
+  message: { from: string; to: string; subject: string; html: string },
+): Promise<boolean> {
+  const { error } = await resend.emails.send(message);
+  if (error) {
+    console.error(
+      `[newsletter] send to ${message.to} failed: ${error.name} ${error.statusCode ?? ""} ${error.message}`,
+    );
+    return false;
+  }
+  return true;
+}
+
 const RESEND_COOLDOWN_MS = 60_000;
 
 /**
@@ -69,13 +97,21 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
   const resend = resendClient();
 
   if (resend) {
-    await resend.emails.send({
-      // Swap for a verified-domain sender once siteConfig.url is a real domain.
+    const ok = await send(resend, {
+      // Must be an address on a domain verified in Resend. The default here
+      // only reaches the account owner, which is why nobody else ever got one.
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
       to: email,
       subject: `Confirm your ${siteConfig.name} subscription`,
       html: `<p>One click to confirm your subscription to ${siteConfig.name}:</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p style="color:#888;font-size:12px">Didn't request this? Ignore this email, or <a href="${unsubscribeUrl}">unsubscribe</a>.</p>`,
     });
+
+    // Telling someone to check an inbox nothing was sent to is how this went
+    // unnoticed for two months. The message is the same whoever asks, so it
+    // still says nothing about whether the address was already on the list.
+    if (!ok) {
+      return { ok: false, message: "We could not send the confirmation email. Please try again shortly." };
+    }
   } else {
     console.warn(
       `[newsletter] RESEND_API_KEY not set — would have emailed ${email}. Confirm link: ${confirmUrl}`,
@@ -170,9 +206,10 @@ export async function sendDailyDigest(): Promise<{
     .join("");
 
   let sent = 0;
+  let failed = 0;
   for (const sub of subscribers) {
     const unsubscribeUrl = `${siteConfig.url}/api/newsletter/unsubscribe?token=${sub.confirmToken}`;
-    await resend.emails.send({
+    const ok = await send(resend, {
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
       to: sub.email,
       subject: `${siteConfig.name} — ${newArticles.length} new ${newArticles.length === 1 ? "story" : "stories"} today`,
@@ -185,8 +222,13 @@ export async function sendDailyDigest(): Promise<{
         </p>
       </div>`,
     });
-    sent += 1;
+    if (ok) sent += 1;
+    else failed += 1;
   }
 
-  return { sent, articleCount: newArticles.length, note: "" };
+  return {
+    sent,
+    articleCount: newArticles.length,
+    note: failed > 0 ? `${failed} send(s) rejected by the mail provider` : "",
+  };
 }
