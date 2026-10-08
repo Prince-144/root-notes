@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { ArticleRow } from "@/components/article-card";
 import { NewsletterBox } from "@/components/newsletter-box";
-import { formatDate, getArticles, getFeatured } from "@/lib/articles";
+import { formatDate, getAllCves, getArticles, getFeatured } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
 import { paginate } from "@/lib/pagination";
@@ -11,6 +11,20 @@ import { Pagination } from "@/components/pagination";
 export default async function HomePage() {
   const featured = await getFeatured();
   const allArticles = await getArticles();
+
+  /**
+   * The identifiers written about most recently.
+   *
+   * Here rather than only in the footer because this is the page every crawl
+   * starts from and the page with whatever authority the domain has. An
+   * identifier page is worth finding in the days right after disclosure and
+   * not much afterwards, so eight links from the homepage is the difference
+   * between being crawled inside that window and being crawled after it.
+   *
+   * Derived from the article list already in hand — no extra query.
+   */
+  const cves = await getAllCves();
+  const recentCves = cves.slice(0, 8);
   // The featured piece stays in this list. The hero above is a one-line
   // ticker, not a card — dropping the newest story out of "Latest analysis"
   // to avoid repeating a headline left the feed starting at the second-newest.
@@ -191,6 +205,36 @@ export default async function HomePage() {
           })}
         </ul>
       </section>
+
+      {/* ---------- IDENTIFIERS ----------
+          A ticker, deliberately: a number and a date and nothing else. The
+          headline belongs on the page itself, and a reader scanning this strip
+          is scanning for a number they already have. */}
+      {recentCves.length > 0 && (
+        <section className="mt-10 rounded-md border border-line bg-panel px-5 py-5 sm:px-7">
+          <h2 className="label-mono">Tracked identifiers</h2>
+          <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
+            {recentCves.map((cve) => (
+              <li key={cve.slug}>
+                <Link href={`/cve/${cve.slug}`} className="group block">
+                  <span className="block font-mono text-sm tabular-nums text-accent transition-opacity group-hover:opacity-70">
+                    {cve.id}
+                  </span>
+                  <span className="mt-1 block font-mono text-2xs uppercase tracking-widest text-fg-subtle">
+                    {formatDate(cve.articles[0].publishedAt)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-5 font-mono text-sm">
+            <Link href="/cve" className="text-accent transition-opacity hover:opacity-70">
+              All {cves.length} identifiers →
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Last thing before the footer: the ask comes after the reader has
           seen what they'd be signing up for, not beside it. */}

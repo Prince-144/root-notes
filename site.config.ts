@@ -82,6 +82,11 @@ export function getCategory(slug: string): Category {
 export const mainNav = [
   { name: "Home", href: "/" },
   ...categories.map((c) => ({ name: c.name, href: `/category/${c.slug}` })),
+  // Not a category — an index, like the archive. It is in the nav and the
+  // archive is not because the thing it indexes is a number someone is
+  // holding while they look for it, and a reader with a CVE in front of them
+  // should not have to reach the footer to find out whether we covered it.
+  { name: "CVE", href: "/cve" },
 ];
 
 /**
