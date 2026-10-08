@@ -103,7 +103,13 @@ export async function subscribe(email: string): Promise<{ ok: boolean; message: 
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
       to: email,
       subject: `Confirm your ${siteConfig.name} subscription`,
-      html: `<p>One click to confirm your subscription to ${siteConfig.name}:</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p style="color:#888;font-size:12px">Didn't request this? Ignore this email, or <a href="${unsubscribeUrl}">unsubscribe</a>.</p>`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <p style="color:#444;line-height:1.5">One click to confirm your subscription to ${siteConfig.name}.</p>
+        <p style="margin:24px 0">
+          <a href="${confirmUrl}" style="background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">Confirm subscription</a>
+        </p>
+        <p style="color:#888;font-size:12px;margin-top:28px">Didn't request this? Ignore this email, or <a href="${unsubscribeUrl}" style="color:#888">unsubscribe</a>.</p>
+      </div>`,
     });
 
     // Telling someone to check an inbox nothing was sent to is how this went
