@@ -14,7 +14,10 @@ export const Subscribers: CollectionConfig = {
     read: ({ req: { user } }) => Boolean(user),
     create: () => false,
     update: () => false,
-    delete: () => false,
+    // Delete is admin-only rather than closed, so test and bounced addresses
+    // can be cleared out of the panel. It was `() => false`, which removed
+    // the button from the admin UI as well as blocking the REST API.
+    delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
     { name: "email", type: "email", required: true, unique: true, index: true },
