@@ -113,8 +113,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  /**
+   * The pages that are not generated from articles, and were not in here at all.
+   *
+   * Every URL this file emitted was derived from the article list — the feed,
+   * the categories, the tags, the identifiers, the articles. Eleven hand-written
+   * pages existed and not one was submitted, including the two that matter most
+   * to a crawler and to a reader deciding whether to trust the place.
+   *
+   * /archive is the worse omission. It exists for crawlers before readers: it
+   * puts every article one click from the footer, which is the answer to 153
+   * pieces sitting discovered and never fetched. It was doing that job without
+   * ever being named in the file Search Console reads.
+   *
+   * /about, /editorial-policy and the author page are the ones that say who
+   * writes this and what happens when it is wrong. A publication that does not
+   * submit those is asking to be assessed without them.
+   *
+   * Deliberately absent, because they set robots index:false and a sitemap
+   * entry would contradict their own page: /search, /privacy, /terms, /cookies,
+   * and the newsletter confirmation and unsubscribe pages. Submitting a URL we
+   * have told Google not to index is a mixed signal, not a free listing.
+   */
+  const staticEntries: MetadataRoute.Sitemap = [
+    // Daily, because both gain a row every time something is published.
+    { path: "/archive", changeFrequency: "daily" as const, priority: 0.7 },
+    { path: "/author/prince-baruwala", changeFrequency: "daily" as const, priority: 0.5 },
+    { path: "/about", changeFrequency: "monthly" as const, priority: 0.5 },
+    { path: "/editorial-policy", changeFrequency: "monthly" as const, priority: 0.5 },
+    { path: "/contribute", changeFrequency: "monthly" as const, priority: 0.3 },
+    { path: "/contact", changeFrequency: "monthly" as const, priority: 0.3 },
+    { path: "/advertise", changeFrequency: "monthly" as const, priority: 0.3 },
+  ].map((entry) => ({
+    url: `${siteConfig.url}${entry.path}`,
+    changeFrequency: entry.changeFrequency,
+    priority: entry.priority,
+  }));
+
   return [
     { url: siteConfig.url, changeFrequency: "daily", priority: 1 },
+    ...staticEntries,
     { url: `${siteConfig.url}/cve`, changeFrequency: "daily", priority: 0.6 },
     ...homePageEntries,
     ...categoryEntries,
