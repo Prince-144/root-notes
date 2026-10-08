@@ -2,6 +2,7 @@ import type { CollectionConfig } from "payload";
 import { revalidatePath } from "next/cache";
 import { categories } from "../site.config";
 import { submitToIndexNow } from "../lib/indexnow";
+import { cveSlug, isCveTag } from "../lib/cve";
 
 /**
  * Article pages are statically generated (generateStaticParams) with no
@@ -16,7 +17,23 @@ import { submitToIndexNow } from "../lib/indexnow";
  * such request context and would otherwise crash on this — silently no-op
  * instead; a script-driven change just waits for the next deploy.
  */
-function revalidateArticlePaths(doc: { slug?: string; categorySlug?: string }) {
+/**
+ * The identifier pages a piece belongs to. A CVE page is built from the tags
+ * on published articles, so publishing one is what creates it and what changes
+ * it — the index gains a row, and an identifier we had written about once now
+ * lists two pieces.
+ */
+function cvePaths(tags?: (string | null)[] | null): string[] {
+  return (tags ?? [])
+    .filter((tag): tag is string => typeof tag === "string" && isCveTag(tag))
+    .map((tag) => `/cve/${cveSlug(tag)}`);
+}
+
+function revalidateArticlePaths(doc: {
+  slug?: string;
+  categorySlug?: string;
+  tags?: (string | null)[] | null;
+}) {
   try {
     revalidatePath("/");
     revalidatePath("/search");
@@ -26,6 +43,13 @@ function revalidateArticlePaths(doc: { slug?: string; categorySlug?: string }) {
     revalidatePath("/archive");
     if (doc.slug) revalidatePath(`/article/${doc.slug}`);
     if (doc.categorySlug) revalidatePath(`/category/${doc.categorySlug}`);
+
+    // The index lists every identifier, so any publish can change it; the
+    // identifier's own page changes only when this piece carries it. A page
+    // for a CVE written about for the first time does not need revalidating —
+    // dynamicParams renders it on demand.
+    revalidatePath("/cve");
+    for (const path of cvePaths(doc.tags)) revalidatePath(path);
   } catch {
     // No active Next.js request context (e.g. a standalone script) — skip.
   }
@@ -78,9 +102,15 @@ export const Articles: CollectionConfig = {
         // Only on the draft -> published transition. Re-pinging on every later
         // edit would be noise to the search engines and pointless to us.
         if (doc.status === "published" && previousDoc?.status !== "published") {
+          // The identifier pages go in too. They exist for the days right
+          // after disclosure, when the bare number is being searched and
+          // almost nothing competes for it — waiting on an organic crawl is
+          // waiting out the window.
           void submitToIndexNow([
             `/article/${doc.slug}`,
             `/category/${doc.categorySlug}`,
+            ...cvePaths(doc.tags),
+            "/cve",
             "/",
             "/sitemap.xml",
           ]);

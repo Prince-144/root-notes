@@ -15,13 +15,13 @@
  * while a company name usually reads worse in front of a sentence than inside
  * it. Anything else belongs in a per-article field, not in a heuristic.
  */
-const CVE = /^cve-\d{4}-\d{4,}$/i;
+import { CVE_ID } from "./cve";
 
 export function searchTitle(article: { title: string; tags?: string[] }): string {
   const headline = article.title.toUpperCase();
 
   const ids = (article.tags ?? [])
-    .filter((tag) => CVE.test(tag))
+    .filter((tag) => CVE_ID.test(tag))
     .map((tag) => tag.toUpperCase())
     .filter((id) => !headline.includes(id));
 

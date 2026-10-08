@@ -1,15 +1,19 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Prompt, TerminalWindow } from "@/components/terminal-window";
 import { ArticleRow } from "@/components/article-card";
 import { BackButton } from "@/components/back-button";
 import { getAllTags, getByTag } from "@/lib/articles";
+import { cveSlug, isCveTag } from "@/lib/cve";
 import { siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
 
 export async function generateStaticParams() {
   const tags = await getAllTags();
-  return tags.map((tag) => ({ slug: tag.slug }));
+  // CVE tags redirect to /cve/<id>, so prerendering them here would build
+  // forty-odd pages whose only content is a redirect. dynamicParams below
+  // renders the redirect on demand instead.
+  return tags.filter((tag) => !isCveTag(tag.slug)).map((tag) => ({ slug: tag.slug }));
 }
 
 /**
@@ -45,6 +49,18 @@ export async function generateMetadata({
 
 export default async function TagPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  /**
+   * An identifier has one page, and it is not this one.
+   *
+   * /cve/cve-2026-88779 carries the identifier as its title, links the
+   * authoritative records and is in the sitemap whatever its article count —
+   * none of which a generic tag page does. Leaving both to render the same
+   * list would split the identifier across two URLs competing for one query,
+   * so the older URL hands over permanently and keeps whatever it had earned.
+   */
+  if (isCveTag(slug)) permanentRedirect(`/cve/${cveSlug(slug)}`);
+
   const articles = await getByTag(slug);
 
   // No tag page for a word nothing carries — otherwise any URL would render

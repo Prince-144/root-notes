@@ -113,6 +113,9 @@ export const footerNav = {
     // single click away — for a reader looking for something old, and for a
     // crawler that would otherwise have to walk the pagination to find it.
     { name: "Archive", href: "/archive" },
+    // Same reasoning as the archive: the identifier pages are only reachable
+    // from the articles that mention them without a hub linked site-wide.
+    { name: "CVE Index", href: "/cve" },
   ],
   Company: [
     { name: "About", href: "/about" },

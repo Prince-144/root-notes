@@ -8,6 +8,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import type { Article as PayloadArticleDoc } from "../payload-types";
 import { matchesQuery } from "./search-match";
+import { cveId, cveSlug, isCveTag, type CveCoverage } from "./cve";
 import type { Article, ArticleSummary } from "./article-types";
 
 export type { Article, ArticleSummary } from "./article-types";
@@ -189,6 +190,38 @@ export async function getAllTags(): Promise<{ slug: string; label: string; count
   }
 
   return [...seen.values()].sort((a, b) => b.count - a.count || a.slug.localeCompare(b.slug));
+}
+
+/**
+ * Every CVE the site has written about, most recently covered first.
+ *
+ * Derived from the same list as everything else, so the whole CVE section —
+ * index, each identifier's page, and its sitemap entries — costs no database
+ * read beyond the one the build already makes. Memoized because
+ * generateMetadata and the page body both ask.
+ */
+export const getAllCves = cache(async (): Promise<CveCoverage[]> => {
+  const articles = await getArticles();
+  const byId = new Map<string, CveCoverage>();
+
+  for (const article of articles) {
+    for (const tag of article.tags) {
+      if (!isCveTag(tag)) continue;
+      const slug = cveSlug(tag);
+      const existing = byId.get(slug);
+      if (existing) existing.articles.push(article);
+      else byId.set(slug, { id: cveId(tag), slug, articles: [article] });
+    }
+  }
+
+  // getArticles() is newest first and insertion follows it, so the map order
+  // and each article list are already in the order the pages want.
+  return [...byId.values()];
+});
+
+export async function getCve(slug: string): Promise<CveCoverage | undefined> {
+  const wanted = cveSlug(slug);
+  return (await getAllCves()).find((cve) => cve.slug === wanted);
 }
 
 /**

@@ -21,6 +21,7 @@ import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
 import { searchTitle } from "@/lib/seo-title";
+import { cveSlug, isCveTag } from "@/lib/cve";
 import { articleMdxComponents } from "@/components/mdx-components";
 
 export async function generateStaticParams() {
@@ -199,7 +200,7 @@ export default async function ArticlePage({
         {article.tags.map((tag) => (
           <Link
             key={tag}
-            href={`/tag/${tagToSlug(tag)}`}
+            href={isCveTag(tag) ? `/cve/${cveSlug(tag)}` : `/tag/${tagToSlug(tag)}`}
             className="tag-chip text-fg-subtle transition-colors hover:border-accent hover:text-fg"
           >
             {tag}

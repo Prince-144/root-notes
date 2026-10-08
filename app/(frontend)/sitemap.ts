@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllTags, getArticles, getByCategory } from "@/lib/articles";
+import { getAllCves, getAllTags, getArticles, getByCategory } from "@/lib/articles";
 import { categories, siteConfig } from "@/site.config";
 import { PAGE_SIZE } from "@/lib/pagination";
 
@@ -45,6 +45,7 @@ function pageEntries(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articles = await getArticles();
   const tags = await getAllTags();
+  const cves = await getAllCves();
 
   const articleEntries: MetadataRoute.Sitemap = articles.map((article) => ({
     url: `${siteConfig.url}/article/${article.slug}`,
@@ -91,12 +92,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.4,
     }));
 
+  /**
+   * Every identifier, whatever its article count — the opposite of the rule
+   * above it, on purpose.
+   *
+   * The threshold on tags is there because a two-item list of prose adds
+   * nothing a crawler needs. An identifier is not that: the page is the answer
+   * to a specific query, "CVE-2026-88779", that almost nothing else competes
+   * for in the days after disclosure, and it is worth submitting even when one
+   * article carries it. Under the tag rule these pages existed and were never
+   * once named in the sitemap, because a CVE is usually covered exactly once.
+   *
+   * Ranked above tag pages and below articles: more worth crawling than an
+   * aggregation of prose, less than the writing itself.
+   */
+  const cveEntries: MetadataRoute.Sitemap = cves.map((cve) => ({
+    url: `${siteConfig.url}/cve/${cve.slug}`,
+    lastModified: cve.articles[0].publishedAt,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   return [
     { url: siteConfig.url, changeFrequency: "daily", priority: 1 },
+    { url: `${siteConfig.url}/cve`, changeFrequency: "daily", priority: 0.6 },
     ...homePageEntries,
     ...categoryEntries,
     ...categoryPageEntries,
     ...tagEntries,
+    ...cveEntries,
     ...articleEntries,
   ];
 }
