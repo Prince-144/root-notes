@@ -132,7 +132,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    *
    * Deliberately absent, because they set robots index:false and a sitemap
    * entry would contradict their own page: /search, /privacy, /terms, /cookies,
-   * and the newsletter confirmation and unsubscribe pages. Submitting a URL we
+   * and the newsletter confirmation and unsubscribe pages — not /newsletter
+   * itself, which is indexable and listed below. Submitting a URL we
    * have told Google not to index is a mixed signal, not a free listing.
    */
   const staticEntries: MetadataRoute.Sitemap = [
@@ -140,6 +141,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/archive", changeFrequency: "daily" as const, priority: 0.7 },
     { path: "/author/prince-baruwala", changeFrequency: "daily" as const, priority: 0.5 },
     { path: "/about", changeFrequency: "monthly" as const, priority: 0.5 },
+    // Weekly, because the page carries a live preview of the most recent digest.
+    { path: "/newsletter", changeFrequency: "weekly" as const, priority: 0.5 },
     { path: "/editorial-policy", changeFrequency: "monthly" as const, priority: 0.5 },
     { path: "/contribute", changeFrequency: "monthly" as const, priority: 0.3 },
     { path: "/contact", changeFrequency: "monthly" as const, priority: 0.3 },
