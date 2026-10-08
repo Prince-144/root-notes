@@ -85,6 +85,19 @@ export type CveIndexEntry = {
 };
 
 /**
+ * What the homepage strip ships: a number and a date, no headline.
+ *
+ * Narrower than CveIndexEntry on purpose — the strip holds every identifier so
+ * its search box can see them all, and the titles would be most of that weight
+ * for something it never renders.
+ */
+export type CveTickerEntry = {
+  id: string;
+  slug: string;
+  latestDate: string;
+};
+
+/**
  * Matched on digits alone, so every way an identifier gets typed finds it:
  * "CVE-2026-88779", "cve 2026 88779", "2026-88779", or just "88779" off the
  * end of an advisory. Punctuation and case are noise in an identifier.
