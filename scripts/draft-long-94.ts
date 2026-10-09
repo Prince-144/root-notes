@@ -107,7 +107,7 @@ The flaw is serious without it. A password check that can be skipped on a platfo
 
 Sungrow's account, via trade coverage, is that it reviewed platform logs for the period the flaw existed and **found no evidence that anyone other than the reporting researcher had used it**, and no sign of customer data leaks, service interruption or unauthorised manipulation.
 
-The timeline is where accounts diverge. The researcher writes that Sungrow published a patch **within a day** of being told. Trade reporting gives dated steps instead: reported **22 August**, emergency patch **25 August**, a follow-up test in mid-September confirming the fix. Public disclosure came in early October, and the CVE was published on **7 October**.
+The two published versions of the timeline do not agree. The researcher writes that Sungrow put out a patch **within a day** of being told. Trade reporting gives dated steps instead: reported **22 August**, emergency patch **25 August**, a follow-up test in mid-September confirming the fix. Public disclosure came in early October, and the CVE was published on **7 October**.
 
 Those are not the same story. Three days is still a fast vendor response, and the gap may be the difference between a hotfix and a root-cause fix — but nobody has said so, and we are not going to assume it.
 
@@ -154,7 +154,7 @@ The entry point is the part worth reading twice.
 
 The attacker did not go through Double Counter's current infrastructure. They went through an **old OVH server from a previous hosting setup**, which was still running a publicly reachable **Metabase** analytics instance.
 
-From there it was a short walk. The attacker forged an **administrator session** in Metabase, which gave access to stored credentials. Those included a **cloud service-account key with administrator rights**, an administrator's saved command-line session, and the **Discord bot token**.
+Getting from that forgotten box to everything else was short work. The attacker forged an **administrator session** in Metabase, which gave access to stored credentials. Those included a **cloud service-account key with administrator rights**, an administrator's saved command-line session, and the **Discord bot token**.
 
 Nothing here required a novel exploit against the live service. The live service was never the way in. A box that had been migrated away from, left running with an analytics tool exposed, held credentials to everything that replaced it.
 
@@ -184,7 +184,7 @@ The last figure is contested, and not by an attacker. **Have I Been Pwned** list
 
 Both can be true: a company counting what an attacker could have taken and a researcher counting what appeared in public are measuring different things. But the gap is worth naming rather than averaging, because the two numbers answer two different questions, and only one of them has been verified against the data.
 
-The stolen bot token was used as well. The attacker granted themselves administrator rights on the support server, reversed a staff ban, and sent invitations across roughly **50 large Discord servers**. A stolen Stripe key produced **7,316 dollars** in fraudulent charges on a company card.
+The stolen Discord bot token did not sit idle either. The attacker granted themselves administrator rights on the support server, reversed a staff ban, and sent invitations across roughly **50 large Discord servers**. A stolen Stripe key produced **7,316 dollars** in fraudulent charges on a company card.
 
 ## The bot was the aggregation point
 
@@ -239,7 +239,7 @@ Four of the extensions were not imitations of **Rabby Wallet**. They were Rabby 
 
 The modification was narrow. The **import function** — the code that runs when a user pastes a recovery phrase or private key into the wallet to restore it — was hooked, so that the secret was sent out as well as used. The exfiltration went by HTTP GET to endpoints on **Cloudflare Workers**.
 
-Everything else worked. That is the point of starting from the real thing: the extension behaves correctly, because it is the correct software. There is no broken screen, no missing feature, nothing that fails in a way a careful user would notice. The only abnormal moment is the one where the user hands over the one secret that matters, which is also the moment the product is supposed to ask for it.
+Everything in the extension other than that one hooked function worked exactly as Rabby Wallet does. That is the point of starting from the real thing: it behaves correctly, because it is the correct software. There is no broken screen, no missing feature, nothing that fails in a way a careful user would notice. The only abnormal moment is the one where the user hands over the one secret that matters, which is also the moment the product is supposed to ask for it.
 
 The other twelve were cheaper work: a lighter interface modelled on **OKX Wallet**'s branding, presented as a generic wallet, posting captured seed phrases as JSON to similar Worker endpoints.
 
@@ -269,7 +269,7 @@ It is tempting to read sixteen malicious extensions as a review failure, and par
 
 Four of these submissions were a legitimate open-source wallet's source, which reviews cleanly because it is the real thing, with one hooked function somewhere inside it. The name differs from the original by a doubled letter and a glyph substitution that is invisible in most interface fonts. The exfiltration target is a platform that half the web uses.
 
-A review process catching that reliably is a review process reading every line of a large codebase against its upstream, for every submission, forever. The structural answer is probably not better review but fewer places a secret can be typed — which is the argument for hardware wallets and for wallet software that never asks for a phrase outside a flow the user initiated.
+Catching one hooked function inside a large and otherwise legitimate codebase, reliably, means reading every line of every submission against its upstream, forever. The structural answer is probably not better review but fewer places a secret can be typed — which is the argument for hardware wallets and for wallet software that never asks for a phrase outside a flow the user initiated.
 
 ## What to do
 
