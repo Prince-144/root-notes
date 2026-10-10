@@ -82,6 +82,8 @@ export type CveIndexEntry = {
   /** The most recent headline, so a row says something before it is clicked. */
   latestTitle: string;
   latestDate: string;
+  /** The date CISA added it to KEV, when it is listed. Absent when it is not. */
+  kevAdded?: string;
 };
 
 /**

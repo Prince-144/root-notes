@@ -6,6 +6,7 @@ import { ArticleRow } from "@/components/article-card";
 import { BackButton } from "@/components/back-button";
 import { formatDate, getAllCves, getCve } from "@/lib/articles";
 import { cveRecords, cveSlug } from "@/lib/cve";
+import { getKevCatalog, getKevEntry, KEV_URL } from "@/lib/kev";
 import { jsonLd } from "@/lib/json-ld";
 import { siteConfig } from "@/site.config";
 
@@ -75,6 +76,13 @@ export default async function CvePage({ params }: { params: Promise<{ id: string
   const oldest = cve.articles[cve.articles.length - 1];
   const records = cveRecords(cve.id);
 
+  // The one piece of status this page reports, because it is the one that
+  // comes dated and attributed. An unreachable catalog has an empty version,
+  // and then the page says nothing rather than claiming an absence it could
+  // not check.
+  const kev = await getKevEntry(cve.id);
+  const { version: kevVersion } = await getKevCatalog();
+
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -119,6 +127,17 @@ export default async function CvePage({ params }: { params: Promise<{ id: string
             ? formatDate(newest.publishedAt)
             : `${formatDate(oldest.publishedAt)} to ${formatDate(newest.publishedAt)}`}
         </div>
+
+        {kev ? (
+          <div className="mt-2 font-mono text-xs text-[var(--color-sig-amber)]">
+            IN CISA KEV — ADDED {kev.dateAdded}
+            {kev.knownRansomwareCampaignUse === "Known" && " — KNOWN RANSOMWARE USE"}
+          </div>
+        ) : kevVersion ? (
+          <div className="mt-2 font-mono text-xs text-fg-subtle">
+            NOT IN CISA KEV — CATALOG {kevVersion}
+          </div>
+        ) : null}
       </TerminalWindow>
 
       {/* Linked, not summarised. Nothing here has read either record, so
@@ -143,6 +162,47 @@ export default async function CvePage({ params }: { params: Promise<{ id: string
           ))}{" "}
           hold the primary records.
         </p>
+
+        {/* KEV is the exception to this page reporting no status of its own.
+            It is a dated, attributed statement from a named authority that
+            something is being exploited — a fact with a source, rather than a
+            severity we would be inventing. */}
+        {kev ? (
+          <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+            CISA added this identifier to its{" "}
+            <a
+              href={KEV_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:opacity-70"
+            >
+              Known Exploited Vulnerabilities catalog
+            </a>{" "}
+            on {kev.dateAdded}, which means the agency has evidence of exploitation
+            rather than a judgement that exploitation is possible.
+            {kev.dueDate
+              ? ` US federal agencies were required to remediate it by ${kev.dueDate}.`
+              : ""}
+            {kev.knownRansomwareCampaignUse === "Known"
+              ? " CISA also records known use in ransomware campaigns."
+              : ""}
+          </p>
+        ) : kevVersion ? (
+          <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+            Not listed in{" "}
+            <a
+              href={KEV_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:opacity-70"
+            >
+              CISA&apos;s Known Exploited Vulnerabilities catalog
+            </a>{" "}
+            as of catalog {kevVersion}. That is not evidence it is not being
+            exploited — the catalog records what CISA has confirmed, and
+            identifiers have been attacked for days before appearing in it.
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-12">

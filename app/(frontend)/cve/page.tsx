@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { CveSearch } from "@/components/cve-search";
 import { getAllCves } from "@/lib/articles";
+import { getKevCatalog } from "@/lib/kev";
 import type { CveIndexEntry } from "@/lib/cve";
 import { jsonLd } from "@/lib/json-ld";
 import { siteConfig } from "@/site.config";
@@ -29,6 +30,10 @@ export const metadata: Metadata = {
 export default async function CveIndexPage() {
   const cves = await getAllCves();
 
+  // One fetch for the whole index rather than one per row. An unreachable
+  // catalog leaves every row unmarked, which is the honest default.
+  const { entries: kev } = await getKevCatalog();
+
   // Only what a row needs. Shipping the full article summaries for every
   // identifier would send the whole feed to the browser to render two lines
   // of each.
@@ -38,6 +43,7 @@ export default async function CveIndexPage() {
     count: cve.articles.length,
     latestTitle: cve.articles[0].title,
     latestDate: cve.articles[0].publishedAt,
+    kevAdded: kev.get(cve.id)?.dateAdded,
   }));
 
   const articleCount = new Set(cves.flatMap((c) => c.articles.map((a) => a.slug))).size;
