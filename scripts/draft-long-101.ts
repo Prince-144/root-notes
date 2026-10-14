@@ -81,6 +81,8 @@ How many more than fourteen hundred depends on who is counting.
 
 ## Five vendors, five totals
 
+Rapid7 counts **1,413**. So does Dark Reading. BleepingComputer says **1,411** and calls it a record. Action1 says **1,409**. Security Online says **1,414**. Five vendors, five counts, a five-CVE spread — and a two-CVE disagreement about how many of them are critical.
+
 - Rapid7: **1,413**, of which 1,102 are in Windows.
 - Dark Reading: **1,413**, of which 80 are critical.
 - BleepingComputer: **1,411**, described as a record.
@@ -91,7 +93,9 @@ A five-CVE spread across five counts, and a two-CVE spread on the critical total
 
 This is a small thing that matters for a specific reason. The number in the headline is the number that reaches a board, and "a record 1,411" is going to be quoted in risk reports for a year by people who cannot check it. We have written about [a ransomware count that is mostly unverified claims](/article/comparitech-q3-2026-the-record-is-2627-claimed-and-247-confirmed) and [a victim figure that was really a database's row count](/article/dtu-breach-200000-is-the-size-of-the-database-not-the-victim-count). The security industry publishes a great many numbers and explains the construction of very few.
 
-One write-up is an outlier worth flagging separately. At least one write-up reports **114** vulnerabilities and three actively exploited zero-days, with CVE identifiers that appear in no other source. That is not a rounding difference, and a reader who lands on it will come away with a completely different picture.
+## And one report that is not in the same conversation
+
+One report is a genuine outlier rather than a counting difference. It gives **114** vulnerabilities and three actively exploited zero-days, with CVE identifiers that appear in no other source. That is not a rounding difference, and a reader who lands on it will come away with a completely different picture.
 
 ## The one that is being exploited
 
