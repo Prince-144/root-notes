@@ -224,6 +224,8 @@ It was not visible from the public research we were reading, and it is distribut
 
 ## What actually happened
 
+Exploitation began on 7 October. Ahsay shipped a working hotfix on the 10th and, the same day, confirmed that the build it had already released did not address either flaw. CISA listed both identifiers on the 14th. Ten days, from CVE records to exploited catalogue, with a failed patch in the middle.
+
 The sequence, assembled from Ahsay's guidance as reported, Huntress's research and Horizon3's write-up:
 
 - **4 October** — the CVE records are published.
