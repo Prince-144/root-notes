@@ -86,7 +86,36 @@ function paragraphScore(p: string): number {
   );
 }
 
-type Section = { heading: string; text: string; isQuote: boolean; winner: number };
+type Section = {
+  heading: string;
+  text: string;
+  isQuote: boolean;
+  winner: number;
+  leadsWithList: boolean;
+};
+
+/**
+ * True when the section's first block is a list.
+ *
+ * Lists are never slide candidates — the eligible filter drops them, because
+ * clean() flattens one into a run-on sentence that overflows. That is right,
+ * and it has a consequence worth surfacing: a section whose whole point is the
+ * list gets its slide from whatever prose follows, so the slide carries a
+ * heading promising the list and a body that is an aside.
+ *
+ * It has happened twice. "Five vendors, five totals" rendered with none of the
+ * totals on it, and "What actually happened" rendered without the timeline.
+ * Both were caught by eye afterwards and fixed in the article by leading the
+ * section with the same content in prose.
+ *
+ * Not an error. Plenty of sections mention a list in passing and the prose
+ * after it is genuinely the point. It is a flag to look at, printed against
+ * the slide it affects.
+ */
+function leadsWithList(paragraphs: string[]): boolean {
+  return /^([-*+] |\d+\. )/.test(paragraphs[0] ?? "");
+}
+
 
 function sections(body: string): Section[] {
   const out: Section[] = [];
@@ -115,6 +144,7 @@ function sections(body: string): Section[] {
       text: clean(chosen.replace(/^>\s?/gm, "")),
       isQuote: chosen === quote,
       winner: paragraphScore(chosen),
+      leadsWithList: leadsWithList(paragraphs),
     });
   }
   return out;
@@ -185,7 +215,15 @@ for (const d of drafts) {
     console.log(
       `    ${mark} ${sectionScore(s).toFixed(2)}  (para ${s.winner.toFixed(2)}, ${s.text.length} chars)  ## ${s.heading}`,
     );
-    if (picked.has(i)) console.log(`           "${s.text.slice(0, 110)}…"`);
+    if (picked.has(i)) {
+      console.log(`           "${s.text.slice(0, 110)}…"`);
+      if (s.leadsWithList) {
+        console.log(
+          "           ^ section opens with a list, which cannot go on a slide." +
+            " Check the heading still describes what the slide says.",
+        );
+      }
+    }
   });
 
   if (issues.length) {

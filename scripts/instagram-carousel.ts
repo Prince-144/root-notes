@@ -370,7 +370,36 @@ function clean(text: string): string {
  * account they are usually the strongest line on the page, and skipping them
  * left slides ending on a dangling "In his words:" with the words missing.
  */
-type Section = { heading: string; text: string; isQuote: boolean; source: string };
+type Section = {
+  heading: string;
+  text: string;
+  isQuote: boolean;
+  source: string;
+  leadsWithList: boolean;
+};
+
+/**
+ * True when the section's first block is a list.
+ *
+ * Lists are never slide candidates — the eligible filter drops them, because
+ * clean() flattens one into a run-on sentence that overflows. That is right,
+ * and it has a consequence worth surfacing: a section whose whole point is the
+ * list gets its slide from whatever prose follows, so the slide carries a
+ * heading promising the list and a body that is an aside.
+ *
+ * It has happened twice. "Five vendors, five totals" rendered with none of the
+ * totals on it, and "What actually happened" rendered without the timeline.
+ * Both were caught by eye afterwards and fixed in the article by leading the
+ * section with the same content in prose.
+ *
+ * Not an error. Plenty of sections mention a list in passing and the prose
+ * after it is genuinely the point. It is a flag to look at, printed against
+ * the slide it affects.
+ */
+function leadsWithList(paragraphs: string[]): boolean {
+  return /^([-*+] |\d+\. )/.test(paragraphs[0] ?? "");
+}
+
 
 function sections(body: string): Section[] {
   const out: Section[] = [];
@@ -513,6 +542,7 @@ function sections(body: string): Section[] {
       // bold spans to find the figure the author actually emphasised, and
       // clean() strips exactly those markers.
       source: block,
+      leadsWithList: leadsWithList(paragraphs),
     });
   }
   return out;
@@ -709,6 +739,17 @@ const picked = sections(article.body)
   .slice(0, POINT_SLIDES)
   .sort((a, b) => a.i - b.i)
   .map((x) => x.s);
+// Printed here rather than left to the eye. A picked section that opens with
+// a list puts prose on the slide under a heading written for the list, which
+// has produced two slides that did not say what their heading promised.
+for (const s of picked) {
+  if (s.leadsWithList) {
+    console.warn(
+      `  ! "${s.heading}" opens with a list. The slide shows prose instead — check the heading still fits.`,
+    );
+  }
+}
+
 const total = picked.length;
 
 const dateLabel = article.publishedAt.slice(0, 10);
