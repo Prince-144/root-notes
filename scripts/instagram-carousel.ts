@@ -494,7 +494,29 @@ function sections(body: string): Section[] {
           t,
         );
 
-      const backReference = opensOnBackReference || danglingPronoun || ordinalOpener;
+      // A paragraph that opens by pointing at our own earlier coverage. These
+      // read well in the article, where the link is right there, and they are
+      // the worst thing that can land on a slide: the viewer cannot open an
+      // internal link from an image, so the card spends its whole body on an
+      // article they cannot see and never says what its heading promised.
+      //
+      // The AdFection piece is what prompted this. Its "What already changed"
+      // section opens by naming what changed — Google and IAB Europe dropping
+      // the vendor — and three paragraphs later refers back to two earlier
+      // pieces. The back-reference carried "110 countries" and "eight months",
+      // won on the digits bonus, and the slide under that heading said nothing
+      // about anything changing.
+      //
+      // Narrow on purpose: only our house openings for this, and only at the
+      // start of the paragraph. Penalised rather than excluded, like the rest
+      // of these, because a section with nothing else still needs a slide.
+      const selfReference =
+        /^we\s+(?:wrote|covered|reported|looked|have\s+(?:written|covered|reported|looked))\b/i.test(
+          t,
+        );
+
+      const backReference =
+        opensOnBackReference || danglingPronoun || ordinalOpener || selfReference;
 
       // 460 was too generous. A 455-character paragraph on the KEV batch piece
       // still lost its last two words — "Both ran, failed, and" with
