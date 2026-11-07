@@ -26,7 +26,7 @@ Read the two highest-numbered `scripts/draft-long-*.ts` files end to end. Their 
 6. Do not repeat a slug or a subject already covered. Grep the slugs across `scripts/draft-long-*.ts` before you commit to a candidate.
 7. Plain, specific English. No marketing voice, no hype, no padding. Short sentences are fine. Say the number.
 8. Run this on each script you write and make it pass. It takes ONE file per invocation, so run it once per script:
-   `npx tsx scripts/check-drafts-offline.ts scripts/draft-long-NNN.ts`
+   `npx tsx scripts/check-drafts-offline.ts scripts/draft-long-YYYY-MM-DD-a.ts`
 
 ## Covers
 
@@ -49,7 +49,7 @@ Each article needs a cover at `public/covers/`, a descriptive filename ending `.
 ## What to produce
 
 1. `research-brief-YYYY-MM-DD.md` at the repository root, dated today: the six candidates, the primary sources read for each, the original finding, and what is not established. Add a reserve section listing stories you looked at and dropped, with the reason.
-2. Three scripts, `scripts/draft-long-NNN.ts`, with NNN continuing from the highest number already in the repository, two articles each.
+2. Three scripts, named by date rather than by number: `scripts/draft-long-YYYY-MM-DD-a.ts`, `-b.ts` and `-c.ts`, two articles each. Do not use the numbered `draft-long-NNN.ts` form. Numbered batches are drafted by hand on another machine and the numbering there is ahead of what this branch can see, so a number picked here would collide with one of theirs.
 3. Six covers in `public/covers/`.
 Write the files and stop. The workflow handles the database and the covers.
 
