@@ -108,7 +108,7 @@ jobs:
           claude -p "$(cat .github/daily-research-prompt.md)" \
             --model "${{ inputs.model || 'claude-sonnet-5-5' }}" \
             --dangerously-skip-permissions \
-            --output-format text 2>&1 | tee /tmp/agent-report.txt
+            --output-format text 2>&1 | tee agent-report.txt
 
       - name: Show what it wrote
         run: git status --porcelain
@@ -155,6 +155,6 @@ jobs:
           name: research-brief
           path: |
             research-brief-*.md
-            /tmp/agent-report.txt
+            agent-report.txt
           if-no-files-found: warn
           retention-days: 30
