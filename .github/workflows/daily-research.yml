@@ -45,7 +45,7 @@ on:
     #
     # Once a run has gone green, change this to the agreed daily slot:
     #   - cron: "30 3 * * *"    # 09:00 Asia/Kolkata
-    - cron: "45 8 * * *"
+    # - cron: "45 8 * * *"
 
 concurrency:
   # Two runs on the same day would pick the same stories and collide on the
