@@ -60,6 +60,12 @@ export const Articles: CollectionConfig = {
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "status", "categorySlug", "publishedAt", "featured"],
+    components: {
+      // Batches are inserted by script while this list is open in a tab, so
+      // the view needs a way to re-read the database without hunting for the
+      // browser's reload.
+      beforeListTable: ["@/components/admin/refresh-button#RefreshButton"],
+    },
   },
   hooks: {
     /**

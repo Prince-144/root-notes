@@ -20,18 +20,26 @@
  * GA is here for what that does not have — sources, geography, devices,
  * engagement.
  */
+import { existsSync } from "node:fs";
+
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
 const DAYS = Number(process.argv[2] ?? 28);
 const PROPERTY = process.env.GA4_PROPERTY_ID;
 const KEY = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-if (!PROPERTY || !KEY) {
+// The key file is checked here rather than left to the client, which throws an
+// unhandled ENOENT from deep inside google-auth-library. Setting the variable
+// is the easy half; the file it points at is the half that is usually missing.
+const KEY_PRESENT = Boolean(KEY) && existsSync(KEY as string);
+
+if (!PROPERTY || !KEY || !KEY_PRESENT) {
   console.error(`
-Not configured yet. Two values are missing from .env.local:
+Not configured yet:
 
   GA4_PROPERTY_ID                  ${PROPERTY ? "ok" : "MISSING"}
   GOOGLE_APPLICATION_CREDENTIALS   ${KEY ? "ok" : "MISSING"}
+  the key file it points at        ${KEY_PRESENT ? "ok" : `MISSING${KEY ? ` (${KEY})` : ""}`}
 
 To get them:
 

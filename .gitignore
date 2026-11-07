@@ -23,3 +23,6 @@ tsconfig.tsbuildinfo
 
 # Service-account keys and anything else that must never be committed.
 /.secrets
+
+# HN candidate report — regenerate with `npm run hn`, do not commit.
+/hn-candidates.md

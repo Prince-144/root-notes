@@ -1,0 +1,130 @@
+# Researches and drafts the day's six articles straight into Payload.
+#
+# Nothing here is committed or pushed, and that is the point. Three things
+# were blocking an unattended version of this job:
+#
+#   - a cloud routine could not reach the web (www.openssh.com did not
+#     resolve, www.cisa.gov was refused by the proxy) and could not push
+#     (HTTP 403, "Claude doesn't have GitHub access to this repository").
+#   - the repository is public, so pushing a day's drafts would publish the
+#     article text before the author had published the articles.
+#   - the site deploys with the Vercel CLI from the author's own machine, so
+#     a cover committed by a robot would never reach production and every
+#     drafted article would show a broken image.
+#
+# An Actions runner fixes the first. Writing to Payload instead of to git
+# fixes the second. scripts/attach-covers.ts fixes the third by uploading
+# each cover into the media collection, which Payload stores in Vercel Blob
+# rather than in the build, and which Articles.coverImage prefers over
+# coverImageUrl. So a cover is live the moment the author publishes, with no
+# deploy in between.
+#
+# The only artefact that leaves this job is the research brief, kept as a
+# build artefact so the reasoning is readable afterwards.
+#
+# Deliberately manual. The schedule line below is written out and commented;
+# 03:30 UTC is 09:00 Asia/Kolkata. Turning it on is a spending decision, not
+# a technical one, and should follow a manual run somebody actually read.
+name: Daily research and drafting
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Model to run the research with"
+        required: false
+        default: "claude-opus-5-5"
+        type: string
+  # schedule:
+  #   - cron: "30 3 * * *"
+
+concurrency:
+  # Two runs on the same day would pick the same stories and collide on the
+  # next batch number.
+  group: daily-research
+  cancel-in-progress: false
+
+permissions:
+  # Read only. This job writes to the database, never to the repository.
+  contents: read
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    # Six articles with primary sources read and six covers captured is a
+    # long job. The cap is here so a wedged run cannot burn the month.
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check Chrome is present
+        run: google-chrome --version
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Research and draft
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "$(cat .github/daily-research-prompt.md)" \
+            --model "${{ inputs.model || 'claude-opus-5-5' }}" \
+            --dangerously-skip-permissions \
+            --output-format text > /tmp/agent-report.txt 2>&1 || true
+          tail -40 /tmp/agent-report.txt
+
+      - name: Show what it wrote
+        run: git status --porcelain
+
+      - name: Insert the drafts into Payload
+        id: insert
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          new=$(git ls-files --others --exclude-standard 'scripts/draft-long-*.ts')
+          if [ -z "$new" ]; then
+            echo "The agent wrote no draft scripts. Nothing to insert."
+            exit 1
+          fi
+          echo "scripts<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$new" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          for f in $new; do
+            echo "::group::insert $f"
+            npx tsx "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Upload the covers into Payload
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: |
+          for f in ${{ steps.insert.outputs.scripts }}; do
+            echo "::group::covers $f"
+            npx tsx scripts/attach-covers.ts "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Keep the brief and the agent's report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-brief
+          path: |
+            research-brief-*.md
+            /tmp/agent-report.txt
+          if-no-files-found: warn
+          retention-days: 30

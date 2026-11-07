@@ -20,7 +20,7 @@ import { ShareLinks } from "@/components/share-links";
 import { NewsletterBox } from "@/components/newsletter-box";
 import { getCategory, siteConfig } from "@/site.config";
 import { jsonLd } from "@/lib/json-ld";
-import { searchTitle } from "@/lib/seo-title";
+import { searchTitle, structuredHeadline } from "@/lib/seo-title";
 import { cveSlug, isCveTag } from "@/lib/cve";
 import { articleMdxComponents } from "@/components/mdx-components";
 
@@ -95,8 +95,10 @@ export default async function ArticlePage({
   const newsArticleLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: article.title,
+    // Google caps this at 110 characters; the page keeps the full headline.
+    headline: structuredHeadline(article.title),
     description: article.excerpt,
+    inLanguage: "en",
     ...(article.coverImageUrl ? { image: [absolute(article.coverImageUrl)] } : {}),
     datePublished: article.publishedAt,
     dateModified: article.updatedAt ?? article.publishedAt,

@@ -36,7 +36,7 @@ function clean(text: string): string {
 function score(p: string): { total: number; parts: string } {
   const t = clean(p);
   const digits = (
-    t.replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ").match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []
+    t.replace(/(?<![$€£])\b\d+(?:\.\d+){2,}\b/g, " ").match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []
   ).length;
   const lengthScore = Math.min(t.length, 420) / 100;
   const backReference =

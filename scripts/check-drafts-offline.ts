@@ -68,10 +68,14 @@ function clean(text: string): string {
     .trim();
 }
 
+// Two dots or more is a version string. One dot is usually a score or a
+// quantity, and stripping those made CVSS numbers invisible to the scorer.
+// Kept identical to the rule in instagram-carousel.ts, which is the one that
+// decides what actually goes on a slide.
 function figureCount(t: string): number {
   return (
     t
-      .replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ")
+      .replace(/(?<![$€£])\b\d+(?:\.\d+){2,}\b/g, " ")
       .match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []
   ).length;
 }

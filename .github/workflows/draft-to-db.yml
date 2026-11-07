@@ -1,0 +1,78 @@
+# Inserts draft batches into Payload after they are pushed.
+#
+# The daily research routine runs as a cloud agent. A cloud agent gets a git
+# checkout and nothing else: no .env.local, so no DATABASE_URI and no way to
+# write to Neon. It does the research, writes scripts/draft-long-NNN.ts,
+# captures the covers and pushes. This workflow is the other half — it runs
+# whatever draft scripts arrived in that push, with the secrets that already
+# live in this repository.
+#
+# Each draft script is idempotent: it skips a slug that is already published,
+# and skips one that already exists as a draft unless --update is passed. So a
+# re-run is safe, and a rerun after an edit needs --update, which this
+# workflow deliberately does not pass.
+name: Insert draft batches into Payload
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/draft-long-*.ts"
+  # So a batch can be re-inserted by hand if a run failed after the push.
+  workflow_dispatch:
+    inputs:
+      script:
+        description: "Path of one draft script to run, e.g. scripts/draft-long-157.ts"
+        required: true
+        type: string
+
+concurrency:
+  # Two runs inserting the same slugs would race on the exists check.
+  group: draft-to-db
+  cancel-in-progress: false
+
+jobs:
+  insert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Needed for the HEAD^ diff below; a shallow clone has no parent.
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Work out which draft scripts to run
+        id: pick
+        run: |
+          if [ -n "${{ inputs.script }}" ]; then
+            echo "scripts=${{ inputs.script }}" >> "$GITHUB_OUTPUT"
+          else
+            changed=$(git diff --name-only HEAD^ HEAD -- 'scripts/draft-long-*.ts' | tr '\n' ' ')
+            echo "scripts=$changed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Insert the drafts
+        if: steps.pick.outputs.scripts != ''
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          for f in ${{ steps.pick.outputs.scripts }}; do
+            echo "::group::$f"
+            npx tsx "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Say so when there was nothing to do
+        if: steps.pick.outputs.scripts == ''
+        run: echo "No draft scripts in this push."

@@ -448,9 +448,16 @@ function sections(body: string): Section[] {
       // "x64" are digits that carry no story, and counting them picked
       // "Tested against Chrome 147.0.7727.102 and Edge 147.0.3912.98, x64
       // Windows only" over the paragraph explaining what the technique does.
+      //
+      // Two dots or more, because that is what a version looks like. The rule
+      // used to strip one dot too, which quietly made CVSS scores invisible:
+      // the SiteGuard section arguing that 7.8 with AV:L is a local vector,
+      // which is the correction that piece exists to make, counted as having
+      // no figures at all and lost its slide to a section about a default
+      // setting. A score is a figure. 8.5.12 is not.
       const digits = (
         t
-          .replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ")
+          .replace(/(?<![$€£])\b\d+(?:\.\d+){2,}\b/g, " ")
           .match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []
       ).length;
 
@@ -697,6 +704,37 @@ async function fromDatabase(slug: string): Promise<CarouselArticle> {
 }
 
 const live = process.argv.includes("--live");
+
+/**
+ * Force the typographic cover instead of compositing the article's image.
+ *
+ * The cover is the one slide that goes from a 16:9 article image to a 4:5
+ * card, so it is centre-cropped and loses a quarter of its width. That is
+ * fine for a photograph and ruinous for a document: a screenshot of an
+ * advisory, or a figure with figures in it, comes out with the numbers cut
+ * off at both edges and the headline sitting on top of the wreckage.
+ *
+ * Pass --typographic when the article's cover is text. The fallback below
+ * already draws a clean card and it reads better at thumbnail size anyway.
+ */
+const typographic = process.argv.includes("--typographic");
+
+/**
+ * Use a different image for the cover than the article's own.
+ *
+ * The grid is photographs with the headline set over them, and it should
+ * stay that way: that treatment is what the account looks like. It breaks
+ * when the article's cover is a document, which is most of them now that
+ * pieces are built on advisories and figures rather than stock photos. A
+ * screenshot of an advisory centre-cropped to 4:5 with a headline on top is
+ * unreadable twice over.
+ *
+ * So the cover image is separable from the article image. Pass --cover with
+ * a URL or a path under public/. The article keeps its document; the post
+ * gets a photograph.
+ */
+const coverFlag = process.argv.indexOf("--cover");
+const coverOverride = coverFlag === -1 ? undefined : process.argv[coverFlag + 1];
 const arg = process.argv.slice(2).find((a) => !a.startsWith("--"));
 if (!arg) {
   console.error("usage: instagram-carousel.ts <article-slug> [--live]");
@@ -742,9 +780,13 @@ const picked = sections(article.body)
     // handed a slide to a section whose winning paragraph was an attribution
     // caveat and pushed out one that had something to say. "x64", "SHA1" and
     // "IPv6" are the same trap.
+    //
+    // Two dots or more, as in the paragraph scorer. This rule lagged behind
+    // that fix and stripped one dot, so a 9.9 read as a version number and a
+    // section built around a CVSS score lost its slide to a version table.
     const hasFigure =
       (s.text
-        .replace(/(?<![$€£])\b\d+(?:\.\d+)+\b/g, " ")
+        .replace(/(?<![$€£])\b\d+(?:\.\d+){2,}\b/g, " ")
         .match(/(?<![\w.])[$€£]?\d[\d,]*(?:\.\d+)?%?(?![\w]|\.\d)/g) ?? []).length > 0;
     const tooShort = s.text.length < 140;
     return {
@@ -782,10 +824,24 @@ const dateLabel = article.publishedAt.slice(0, 10);
  * single SVG. Falls back to the typographic version when there is no image.
  */
 async function writeCover(path: string): Promise<void> {
-  const src: string | undefined = article.coverImageUrl;
+  const src: string | undefined =
+    coverOverride ?? (typographic ? undefined : article.coverImageUrl);
 
   if (!src) {
-    await sharp(Buffer.from(coverSlide(article.categorySlug, article.title, dateLabel)))
+    // Over the generated field, exactly like every other slide. Rendering the
+    // text SVG on its own leaves a transparent canvas, because the scrim is a
+    // translucent overlay and nothing else in that layer is opaque: the title
+    // then flattens to near-white on near-white and the cover is blank. This
+    // path had never run until --typographic existed, so the bug sat here
+    // unseen while every article happened to have a cover image.
+    await sharp(Buffer.from(backgroundSvg(slug, 0)))
+      .composite([
+        {
+          input: Buffer.from(coverSlide(article.categorySlug, article.title, dateLabel)),
+          top: 0,
+          left: 0,
+        },
+      ])
       .png()
       .toFile(path);
     return;
@@ -827,38 +883,93 @@ const slides: { name: string; svg: string }[] = [
 ];
 
 /**
- * Broad hashtags by category, added alongside the article's own tags.
+ * Broad hashtags by category, used only to top up an article that arrived with
+ * fewer than five tags of its own.
  *
- * The article tags alone are far too specific to be found  #cisakev and
- * #operationaltechnology are accurate and almost nobody searches them. An
- * account with no followers is discovered through hashtags or not at all, so
- * the caption needs a layer people actually browse as well as the precise
- * ones that reach the right readers.
+ * These are the fallback now, not the main event. #cybersecurity labels the
+ * account rather than the piece, and with five slots that is a slot spent on
+ * nothing: #cisakev is browsed by far fewer people and tells every one of
+ * them exactly what they are looking at. Entries are ordered most specific
+ * first, since only the first few are ever reached, and the ones that said
+ * nothing beyond "this is a tech account" (#technews, #technology, #tech,
+ * #business) are gone.
  */
 const BROAD_HASHTAGS: Record<string, string[]> = {
-  security: [
-    "cybersecurity",
-    "infosec",
-    "cybersecuritynews",
-    "hacking",
-    "technews",
-    "datasecurity",
-  ],
-  ai: ["artificialintelligence", "ai", "aisecurity", "technology", "technews", "machinelearning"],
-  startups: ["startups", "startupnews", "venturecapital", "founders", "technews", "business"],
-  gadgets: ["gadgets", "technology", "technews", "hardware", "tech", "consumertech"],
-  world: ["technews", "technology", "policy", "privacy", "regulation", "digitalrights"],
+  security: ["cybersecurity", "infosec", "datasecurity", "cybersecuritynews", "hacking"],
+  ai: ["aisecurity", "artificialintelligence", "machinelearning", "ai"],
+  startups: ["startupnews", "venturecapital", "founders", "startups"],
+  gadgets: ["consumertech", "gadgets", "hardware"],
+  world: ["digitalrights", "regulation", "privacy", "policy"],
 };
 
+/** Instagram's cap per post since 18 December 2025, down from thirty. */
 /**
- * Instagram allows 30. Fewer, better-chosen ones read less like spam, and the
- * broad set goes first because that is what gets browsed.
+ * Fourteen, which is what the account posted before November 2026 and what
+ * it is going back to.
+ *
+ * The honest position is that Instagram capped hashtags at five per post on
+ * 18 December 2025 and enforces it, so a caption with fourteen may refuse to
+ * publish. That was raised, and the call is to match the older posts; the
+ * first five in the list are the specific ones, so trimming to five is a
+ * delete from the end and nothing else.
+ */
+const HASHTAG_LIMIT = 14;
+
+/**
+ * Tags that label nothing: the block caption.py warns on, plus the two bare
+ * ones that turn up in article keywords.
+ */
+const EMPTY_HASHTAGS = new Set([
+  "viral",
+  "viralreels",
+  "reels",
+  "reelsinstagram",
+  "fyp",
+  "explore",
+  "explorepage",
+  "foryou",
+  "foryoupage",
+  "trending",
+  "instagood",
+  "instadaily",
+  "love",
+  "follow",
+  "like4like",
+  "news",
+  "update",
+]);
+
+/**
+ * Five hashtags, the specific ones first.
+ *
+ * Instagram capped hashtags at five per post on 18 December 2025, down from
+ * thirty, telling creators that "using fewer (up to 5) more targeted hashtags,
+ * rather than many generic ones" performs better. Adam Mosseri had already
+ * said in February 2025 that hashtags do not increase reach and are a label
+ * rather than a distribution lever. So this is five labels for what the piece
+ * is about; a sixth is not counted and only dates the post.
+ *
+ * The article's own tags go first because they are the specific ones, the
+ * broad list fills whatever is left, and a tag that describes nothing is
+ * dropped wherever it came from. The ig-caption skill's caption.py enforces
+ * the same five.
  */
 function hashtags(categorySlug: string, tags: string[]): string {
   const broad = BROAD_HASHTAGS[categorySlug] ?? BROAD_HASHTAGS.security;
-  const niche = tags.map((t) => t.replace(/-/g, ""));
-  const all = [...new Set([...broad, ...niche])].slice(0, 16);
-  return all.map((t) => `#${t}`).join(" ");
+  const picked: string[] = [];
+  const seen = new Set<string>();
+
+  for (const raw of [...tags, ...broad]) {
+    const tag = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+    // A bare year or a single character is a label nobody reads as a topic.
+    if (tag.length < 2 || /^\d+$/.test(tag)) continue;
+    if (EMPTY_HASHTAGS.has(tag) || seen.has(tag)) continue;
+    seen.add(tag);
+    picked.push(`#${tag}`);
+    if (picked.length === HASHTAG_LIMIT) break;
+  }
+
+  return picked.join(" ");
 }
 
 /** Draws the background for this slide and composites the text layer over it. */
@@ -884,9 +995,26 @@ Full piece: ${siteConfig.url}/article/${article.slug}
 
 ${hashtags(article.categorySlug, article.tags ?? [])}`;
 
-writeFileSync(`${dir}/caption.txt`, caption, "utf8");
+// The caption this script generates is a starting point: it leads with the
+// headline and carries a URL that is not clickable on Instagram. Its hashtag
+// block is now inside the five Instagram counts, but the caption that
+// actually gets posted is still written by hand, or through the ig-caption
+// skill, and linted. Twice on 19 October 2026 a regeneration after an
+// article edit silently overwrote one of those and it had to be retyped
+// from scratch.
+//
+// So an existing caption.txt is treated as the author's and left alone. The
+// generated one goes beside it under a name nothing posts from.
+const captionPath = `${dir}/caption.txt`;
+const captionKept = existsSync(captionPath);
+writeFileSync(captionKept ? `${dir}/caption-generated.txt` : captionPath, caption, "utf8");
 
-console.log(`${dir}/ — ${slides.length + 1} slides + caption.txt`);
+console.log(
+  `${dir}/ — ${slides.length + 1} slides + ${captionKept ? "caption-generated.txt" : "caption.txt"}`,
+);
+if (captionKept) {
+  console.log("  caption.txt left as it was. The generated one is caption-generated.txt.");
+}
 console.log("  01-cover.png");
 for (const s of slides) console.log(`  ${s.name}.png`);
 process.exit(0);
